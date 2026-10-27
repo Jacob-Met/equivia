@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#21393b">
+  <title>EQUIVIA · A laboratory for better questions</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%23f3f1e9'/%3E%3Cpath d='M16 32h32' stroke='%235e7763' stroke-width='3'/%3E%3Ccircle cx='16' cy='32' r='8' fill='%23f3f1e9' stroke='%235e7763' stroke-width='3'/%3E%3Ccircle cx='48' cy='32' r='8' fill='%235e7763'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="masthead">
+    <a href="/" class="brand" aria-label="Equivia home"><span class="brand-symbol" aria-hidden="true">◌—●</span>EQUIVIA</a>
+    <span class="brand-note">a laboratory for better questions</span>
+    <nav aria-label="Investigation files"><button id="open-notebook" class="quiet">Open notebook</button><button id="save-notebook" class="outline">Save notebook <span aria-hidden="true">↗</span></button></nav>
+  </header>
+  <main>
+    <section class="introduction">
+      <div><p class="eyebrow">INVESTIGATION 01 · THE MATCHING LAMPS</p><h1>Looking isn't<br>always knowing.</h1></div>
+      <div class="brief"><p>These two lights always agree.<br>Does A drive B, or does B drive A?</p><p class="muted">Watch. Make a prediction.<br>Then change something.</p></div>
+      <button id="new-investigation" class="text-button new-case">Start a new investigation <span aria-hidden="true">↻</span></button>
+    </section>
+
+    <div class="lab-layout">
+      <div class="main-column">
+        <section class="observation-band" aria-labelledby="observation-title">
+          <div><p class="eyebrow">01 / WHAT YOU CAN SEE</p><h2 id="observation-title">Two explanations. The same evidence.</h2></div>
+          <div id="observation-summary" class="observed-counts"></div>
+          <button id="observe" class="text-button">Watch 8 more trials ↗</button>
+          <p class="observation-note">Both worlds predict the same observable distribution: half both off, half both on. More watching cannot separate them.</p>
+        </section>
+
+        <section class="bench" aria-labelledby="bench-title">
+          <div class="bench-heading"><div><p class="eyebrow">02 / ASK A DIFFERENT QUESTION</p><h2 id="bench-title">Take control of one lamp.</h2></div><div id="budget" class="budget" aria-live="polite"></div></div>
+          <div class="lamps" id="lamps" aria-label="Latest lamp states">
+            <div class="lamp" id="lamp-A"><div class="lamp-label"><span>A</span><span id="state-A">READY</span></div><svg viewBox="0 0 260 230" role="img" aria-label="Lamp A"><defs><radialGradient id="halo-A"><stop offset="0" stop-color="#eecb7b" stop-opacity=".7"/><stop offset="1" stop-color="#eecb7b" stop-opacity="0"/></radialGradient></defs><ellipse class="halo" cx="130" cy="93" rx="110" ry="90" fill="url(#halo-A)"/><path class="glass" d="M91 126C58 106 64 59 95 43C125 27 165 39 179 68C191 91 182 113 168 127L158 151H101Z"/><path class="filament" d="M108 147L105 108L121 120L132 102L143 120L158 108L151 147"/><path class="neck" d="M101 151H158V177H101Z"/><path class="rings" d="M100 157H160M100 166H160M105 175H154"/><path class="stand" d="M112 180H147L155 196H181V207H79V196H104Z"/><ellipse class="base-shadow" cx="130" cy="218" rx="64" ry="5"/></svg><span id="clamp-A" class="clamp-label">FREE TO RESPOND</span></div>
+            <div class="unknown-link" aria-hidden="true"><span>?</span><div></div><small>the mechanism<br>is hidden</small></div>
+            <div class="lamp" id="lamp-B"><div class="lamp-label"><span>B</span><span id="state-B">READY</span></div><svg viewBox="0 0 260 230" role="img" aria-label="Lamp B"><defs><radialGradient id="halo-B"><stop offset="0" stop-color="#eecb7b" stop-opacity=".7"/><stop offset="1" stop-color="#eecb7b" stop-opacity="0"/></radialGradient></defs><ellipse class="halo" cx="130" cy="93" rx="110" ry="90" fill="url(#halo-B)"/><path class="glass" d="M91 126C58 106 64 59 95 43C125 27 165 39 179 68C191 91 182 113 168 127L158 151H101Z"/><path class="filament" d="M108 147L105 108L121 120L132 102L143 120L158 108L151 147"/><path class="neck" d="M101 151H158V177H101Z"/><path class="rings" d="M100 157H160M100 166H160M105 175H154"/><path class="stand" d="M112 180H147L155 196H181V207H79V196H104Z"/><ellipse class="base-shadow" cx="130" cy="218" rx="64" ry="5"/></svg><span id="clamp-B" class="clamp-label">FREE TO RESPOND</span></div>
+          </div>
+          <div class="experiment-controls">
+            <fieldset><legend>Hold this lamp</legend><div class="segmented"><label><input type="radio" name="target" value="A" checked><span>A</span></label><label><input type="radio" name="target" value="B"><span>B</span></label></div></fieldset>
+            <fieldset><legend>In this state</legend><div class="segmented"><label><input type="radio" name="value" value="1" checked><span>On</span></label><label><input type="radio" name="value" value="0"><span>Off</span></label></div></fieldset>
+            <p class="clamp-explanation">A clamp replaces a lamp's usual input. The other lamp follows its existing rule.</p>
+          </div>
+          <div class="prediction-box"><div><span class="step-label">PREDICT BEFORE YOU TRY</span><h3 id="prediction-question">How often will B be on?</h3></div><fieldset id="predictions"><label for="prediction-percent">Your probability estimate</label><div class="prediction-value"><input id="prediction-percent" type="number" min="0" max="100" step="any" inputmode="decimal" placeholder="0–100"><span aria-hidden="true">%</span></div></fieldset></div>
+          <div class="run-row"><p id="run-hint">Choose a prediction to begin.</p><button id="run-one" class="primary" disabled>Run one trial <span aria-hidden="true">→</span></button><button id="run-three" class="outline" disabled>Run three</button></div>
+          <div id="experiment-result" class="experiment-result" aria-live="polite" hidden></div>
+        </section>
+
+        <section class="hypotheses" aria-labelledby="hypotheses-title"><div class="section-line"><h2 id="hypotheses-title">What still fits?</h2><span>Equal starting weights · these models only</span></div><div id="hypothesis-list" class="hypothesis-list"></div><p class="small muted">Weights describe support among the declared candidates. A high weight is not a proof, and an unmodeled mechanism could behave differently.</p></section>
+
+        <section class="journal" aria-labelledby="journal-title"><div class="section-line"><div><p class="eyebrow">03 / THE RECORD</p><h2 id="journal-title">Your experiment notebook</h2></div><button id="debrief" class="text-button">Finish & reveal the mechanism ↗</button></div><div id="journal-entries"></div><div id="debrief-content" class="debrief-content" hidden></div></section>
+      </div>
+
+      <aside class="thinking-column" aria-label="Reasoning and model guidance">
+        <div class="thinking-note"><p class="eyebrow">A QUESTION TO KEEP IN MIND</p><h2>What would happen<br>if you intervened?</h2><p>“A is on” and “I held A on” may look identical. They can mean very different things.</p><button id="show-predictions" class="text-button">Compare the worlds' predictions ↓</button><div id="prediction-comparison" hidden></div></div>
+        <section class="explanation"><label for="learner-explanation">Your working explanation</label><textarea id="learner-explanation" rows="5" maxlength="1600" placeholder="I think A controls B because…"></textarea><button id="ask-guide" class="outline" disabled>Question my reasoning <span aria-hidden="true">↗</span></button><p id="model-status" class="small muted">Checking optional model guidance…</p><div id="guide-advice" hidden></div></section>
+        <details class="method"><summary>What is this lab assuming?</summary><p>These are authored binary worlds. A root lamp is a fair random bit; the other follows its parent. The hidden structural world stays fixed, while every trial draws fresh noise. A clamp sets one variable without changing the other's rule.</p><p>Exact enumeration establishes equality for these models. The observations you collect are finite random samples. This laboratory does not establish causes in the outside world.</p><button id="inspect-worlds" class="text-button">Inspect the executable rules ↓</button><pre id="world-source" hidden></pre></details>
+      </aside>
+    </div>
+
+    <section class="worldmaker" aria-labelledby="worldmaker-title"><div><p class="eyebrow">FOR THE CURIOUS · CREATOR STUDIO</p><h2 id="worldmaker-title">Make a pair the evidence can't tell apart.</h2><p>Describe two possible mechanisms. An NVIDIA model can propose executable worlds; exact calculations must verify their shared observations and a separating experiment.</p></div><div class="worldmaker-controls"><label class="sr-only" for="world-brief">Describe a pair of worlds</label><textarea id="world-brief" rows="3" maxlength="1600" placeholder="Two lamps agree most of the time. Could noisy rules hide which lamp drives the other?…"></textarea><button id="propose-worlds" class="outline" disabled>Propose a world pair ↗</button><button id="import-worlds" class="text-button">Open an authored world pair</button><div id="author-result" hidden></div></div></section>
+    <div class="status-row"><p id="status" role="status" aria-live="polite">Preparing your investigation…</p><span id="save-status">Notebook stays on this device</span></div>
+  </main>
+  <footer><span>EQUIVIA</span><p>The world doesn't change when you look. It might when you act.</p><span>AUTHORED WORLDS · PRIVATE DEVELOPMENT</span></footer>
+  <input type="file" id="notebook-file" accept=".json,application/json" hidden>
+  <input type="file" id="world-file" accept=".json,application/json" hidden>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

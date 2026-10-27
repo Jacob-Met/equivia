@@ -1,0 +1,4 @@
+{
+  "brief": "Create a noisy two-lamp causal puzzle. The two candidate mechanisms should have exactly the same full observational joint distribution over A and B, but disagree after a deliberate clamp of one lamp. Use only the observed binary variables A and B and independent private noise in the structural equations. Prefer overlapping support under the separating clamp, so a single possible result can leave both candidates viable. Give the actual finite truth tables and a separating intervention; the application will verify both mathematical claims before accepting the pair.",
+  "variableIds": ["A", "B"]
+}

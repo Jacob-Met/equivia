@@ -1,0 +1,68 @@
+{
+  "schema": "equivia.qualification.v1",
+  "checkpoint": "initial-local-studio",
+  "promptLastCompletelyRead": "2026-10-27.10",
+  "owner": "node-72e09d180ec675855992b3cbfb59e9e8",
+  "engineSHA256": "40b12a3f4e3240baa60908090edecaa89e59059b3ebf32a637bdb4e6785497d4",
+  "checks": [
+    {
+      "operation": "hamon-3d852f14-equivia-verify-01",
+      "tests": 48,
+      "passed": 48,
+      "cliRoutes": 12
+    },
+    {
+      "operation": "hamon-3d852f14-equivia-independent-02",
+      "tests": 53,
+      "passed": 53
+    },
+    {
+      "operation": "hamon-3d852f14-equivia-browser-review-01",
+      "journeys": 16,
+      "passed": 16,
+      "chromeSandbox": true,
+      "viewports": [
+        1440,
+        375
+      ],
+      "rootInspectedPixels": true
+    },
+    {
+      "operation": "hamon-3d852f14-equivia-precision-01",
+      "passed": true,
+      "exactAlternative": "1/4722366482869645213697",
+      "viewports": [
+        1440,
+        375
+      ]
+    },
+    {
+      "operation": "hamon-3d852f14-equivia-package-01",
+      "archiveSHA256": "a883005dc14df3b1794c8eeb62875a189f208ba4d1ff18d7034b0e65983f148b",
+      "bytes": 83663,
+      "files": 30,
+      "extractedTests": 48,
+      "extractedPassed": 48,
+      "extractedCliRoutes": 12
+    },
+    {
+      "operation": "hamon-3d852f14-equivia-live-preflight-01",
+      "actualConsumerExit": 2,
+      "expectedFailure": "MODEL_UNAVAILABLE",
+      "providerRequestsAttempted": 0
+    }
+  ],
+  "limits": [
+    "No live Nebius/NVIDIA request qualified",
+    "No actual learner study",
+    "No public release or submission",
+    "Later forecast/lesson and reported-model metadata drafts are separate from this checkpoint"
+  ],
+  "preservedFailures": [
+    {
+      "operation": "hamon-3d852f14-equivia-browser-first-01",
+      "exit": 1,
+      "reason": "resource404; later favicon and full browser review closed the observed failure"
+    }
+  ]
+}

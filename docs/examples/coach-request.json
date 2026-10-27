@@ -1,0 +1,37 @@
+{
+  "worlds": [
+    {
+      "schema": "equivia.scm.v1",
+      "id": "A-causes-B",
+      "label": "A drives B",
+      "observed": ["A", "B"],
+      "variables": [
+        { "id": "A", "parents": [], "noiseBits": 1, "table": [0, 1] },
+        { "id": "B", "parents": ["A"], "noiseBits": 0, "table": [0, 1] }
+      ]
+    },
+    {
+      "schema": "equivia.scm.v1",
+      "id": "B-causes-A",
+      "label": "B drives A",
+      "observed": ["A", "B"],
+      "variables": [
+        { "id": "B", "parents": [], "noiseBits": 1, "table": [0, 1] },
+        { "id": "A", "parents": ["B"], "noiseBits": 0, "table": [0, 1] }
+      ]
+    }
+  ],
+  "experiments": [
+    { "id": "hold-A-on", "label": "Hold A on", "intervention": { "A": 1 } },
+    { "id": "hold-A-off", "label": "Hold A off", "intervention": { "A": 0 } },
+    { "id": "hold-B-on", "label": "Hold B on", "intervention": { "B": 1 } },
+    { "id": "hold-B-off", "label": "Hold B off", "intervention": { "B": 0 } }
+  ],
+  "history": [
+    { "intervention": {}, "outcome": { "A": 0, "B": 0 } },
+    { "intervention": {}, "outcome": { "A": 1, "B": 1 } },
+    { "intervention": { "A": 1 }, "outcome": { "A": 1, "B": 1 } }
+  ],
+  "explanation": "Both lamps match when I watch. I also held A on once and B was on. I think that proves A causes B.",
+  "currentHypotheses": ["A-causes-B"]
+}
