@@ -31,6 +31,10 @@ function element(tag, text, className) {
   if (className) node.className = className;
   return node;
 }
+function setDisclosure(buttonId, panelId, expanded) {
+  $(panelId).hidden = !expanded;
+  $(buttonId).setAttribute('aria-expanded', String(expanded));
+}
 function status(message, error = false) { $('status').textContent = message; $('status').classList.toggle('error', error); }
 function persist() {
   try { localStorage.setItem(STORE, serializeSession(session)); $('save-status').textContent = 'Notebook kept on this device'; }
@@ -205,7 +209,7 @@ async function guide() {
       if (!['A', 'B'].includes(id) || ![0, 1].includes(value)) return;
       document.querySelector(`[name="target"][value="${id}"]`).checked = true;
       document.querySelector(`[name="value"][value="${value}"]`).checked = true;
-      clearPrediction(); availability(); renderComparison(advice.experiment.intervention); $('prediction-comparison').hidden = false;
+      clearPrediction(); availability(); renderComparison(advice.experiment.intervention); setDisclosure('show-predictions', 'prediction-comparison', true);
       status('Suggested experiment selected. Make your own prediction before spending a trial.');
     });
     const reject = element('button', 'That is not what I meant', 'text-button');
@@ -250,8 +254,8 @@ $('observe').addEventListener('click', () => {
   try { session = observe(session); changed(); render(); status('Eight more passive observations recorded. They have the same likelihood under both candidates.'); }
   catch (error) { status(error.message, true); }
 });
-$('show-predictions').addEventListener('click', () => { $('prediction-comparison').hidden = !$('prediction-comparison').hidden; if (!$('prediction-comparison').hidden) renderComparison(); });
-$('inspect-worlds').addEventListener('click', () => { $('world-source').hidden = !$('world-source').hidden; });
+$('show-predictions').addEventListener('click', () => { setDisclosure('show-predictions', 'prediction-comparison', $('prediction-comparison').hidden); if (!$('prediction-comparison').hidden) renderComparison(); });
+$('inspect-worlds').addEventListener('click', () => { setDisclosure('inspect-worlds', 'world-source', $('world-source').hidden); });
 $('learner-explanation').addEventListener('input', event => { session.explanation = event.target.value; changed(); });
 $('ask-guide').addEventListener('click', guide);
 $('debrief').addEventListener('click', () => { session.revealed = true; changed(); render(); status('The authored mechanism is revealed. Your notebook preserves what the evidence established before the reveal.'); });
