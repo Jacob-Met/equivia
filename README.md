@@ -46,6 +46,10 @@ The [private Windows x64 build](docs/WINDOWS.md) includes its verified Node runt
 
 The [private Mac build](docs/MACOS.md) includes a verified Node runtime and a Terminal launcher for Apple silicon. Its normal address preserves browser notebook storage; temporary sessions are optional. The deterministic laboratory works locally, and this launcher leaves model assistance unconfigured.
 
+## Portable Linux build
+
+The [private Linux x64 build](docs/LINUX.md) includes a verified Node runtime and a terminal launcher. Open the printed local address in your browser; the normal address preserves notebook storage. See the artifact receiving report for the exact platform and browser checked.
+
 ## Verification and portable package
 
 ```sh
