@@ -2,6 +2,8 @@
 
 This private experimental portable build includes Node.js 22.23.4. A separate Node or npm installation is not required. The laboratory runs locally in your browser.
 
+**Experimental qualification:** Native Windows build, launcher, local application, notebook reload, keyboard and layout checks passed. Exported-notebook file download/reimport and ordinary interactive default-browser opening remain unverified. In the automated SYSTEM session, both application export and a separate tiny Blob-download control emitted a download event without completing a file. The cause is unresolved. The release includes the passing checks and the failed/blocked receiving evidence; it does not claim full browser acceptance.
+
 ## Start and stop
 
 1. Extract the ZIP completely. Keep the complete **EQUIVIA** folder together.
