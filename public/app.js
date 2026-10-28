@@ -5,6 +5,9 @@ import { verifyAuthoredProposal } from '/src/model.js';
 
 const $ = id => document.getElementById(id);
 const STORE = 'equivia.notebook.v1';
+const RECOVERY_LIMIT = 8;
+const recoveryKey = slot => `${STORE}.recovery.${slot}`;
+let preservedUnreadable = null;
 let session, config, revision = 0, busy = false, modelBusy = false, authoredProposal = null;
 const selected = name => document.querySelector(`input[name="${name}"]:checked`)?.value;
 const target = () => selected('target');
@@ -37,14 +40,75 @@ function setDisclosure(buttonId, panelId, expanded) {
 }
 function status(message, error = false) { $('status').textContent = message; $('status').classList.toggle('error', error); }
 function persist() {
+  // A fresh in-memory lesson must never replace an unreadable prior notebook.
+  // Download the current lesson or explicitly preserve the original first.
+  if (preservedUnreadable !== null) {
+    $('save-status').textContent = 'Current lesson not auto-saved · original retained';
+    return;
+  }
   try { localStorage.setItem(STORE, serializeSession(session)); $('save-status').textContent = 'Notebook kept on this device'; }
   catch { $('save-status').textContent = 'Save a notebook file to keep this investigation'; }
 }
 function changed() { revision++; $('guide-advice').hidden = true; persist(); }
-function download(text, name) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+function download(text, name, type = 'application/json') {
+  const url = URL.createObjectURL(new Blob([text], { type }));
   const link = element('a'); link.href = url; link.download = name; document.body.append(link); link.click(); link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+function recoveryCopies() {
+  const copies = [];
+  for (let slot = 1; slot <= RECOVERY_LIMIT; slot++) {
+    const value = localStorage.getItem(recoveryKey(slot));
+    if (value !== null) copies.push({ slot, value });
+  }
+  return copies;
+}
+function renderRecovery() {
+  const panel = $('notebook-recovery'), archive = $('recovery-archive');
+  archive.replaceChildren();
+  let copies = [];
+  try { copies = recoveryCopies(); } catch { /* Storage can be disabled. The current file export stays available. */ }
+  const active = preservedUnreadable !== null;
+  panel.hidden = !active && !copies.length;
+  $('unreadable-explanation').hidden = !active;
+  $('download-unreadable').hidden = !active;
+  $('replace-unreadable').hidden = !active;
+  for (const { slot, value } of copies) {
+    const button = element('button', `Download retained original ${slot}`, 'outline');
+    button.addEventListener('click', () => download(value, `equivia-retained-original-${slot}.txt`, 'text/plain;charset=utf-8'));
+    archive.append(button);
+  }
+  archive.hidden = !copies.length;
+}
+function replaceStoredNotebook() {
+  if (preservedUnreadable === null) return;
+  const original = preservedUnreadable;
+  try {
+    if (localStorage.getItem(STORE) !== original) throw Error('The stored original changed in another window. Reload before replacing it.');
+    const next = serializeSession(session);
+    receiveSession(next); // The replacement must pass the complete executable replay validator.
+    const copies = recoveryCopies();
+    let slot = copies.find(item => item.value === original)?.slot;
+    if (!slot) {
+      for (let index = 1; index <= RECOVERY_LIMIT; index++) {
+        if (!copies.some(item => item.slot === index)) { slot = index; break; }
+      }
+    }
+    if (!slot) throw Error('All eight original-copy slots are occupied. Download earlier originals before using a fresh browser profile. Nothing was replaced.');
+    const key = recoveryKey(slot);
+    if (localStorage.getItem(key) === null) localStorage.setItem(key, original);
+    if (localStorage.getItem(key) !== original) throw Error('The original recovery copy could not be independently read back.');
+    if (localStorage.getItem(STORE) !== original) throw Error('The stored original changed while preserving the copy. Reload and inspect it.');
+    localStorage.setItem(STORE, next);
+    if (localStorage.getItem(STORE) !== next) throw Error('Replacement could not be independently read back. The original recovery copy remains available.');
+    preservedUnreadable = null;
+    renderRecovery();
+    $('save-status').textContent = 'Notebook kept on this device · original recovery copy retained';
+    status('The current investigation is now saved. The unreadable original remains separately downloadable.');
+  } catch (error) {
+    renderRecovery();
+    status(`Saved notebook not replaced: ${error.message}`, true);
+  }
 }
 function freshSeed() { return crypto.getRandomValues(new Uint32Array(1))[0]; }
 function clearPrediction() { $('prediction-percent').value = ''; }
@@ -264,6 +328,10 @@ $('save-notebook').addEventListener('click', () => {
   try { download(serializeSession(session), 'equivia-notebook.json'); status('Notebook saved with its worlds, predictions, ordered evidence and replay state.'); }
   catch (error) { status(error.message, true); }
 });
+$('download-unreadable').addEventListener('click', () => {
+  if (preservedUnreadable !== null) download(preservedUnreadable, 'equivia-unreadable-original.txt', 'text/plain;charset=utf-8');
+});
+$('replace-unreadable').addEventListener('click', replaceStoredNotebook);
 $('open-notebook').addEventListener('click', () => $('notebook-file').click());
 $('notebook-file').addEventListener('change', async event => {
   const file = event.target.files[0]; event.target.value = ''; if (!file) return;
@@ -294,15 +362,21 @@ $('world-file').addEventListener('change', async event => {
   } catch (error) { status(error.message, true); }
 });
 
+let storedOriginal = null, storageReadable = false;
 try {
-  const saved = localStorage.getItem(STORE);
-  session = saved ? receiveSession(saved) : createSession();
+  storedOriginal = localStorage.getItem(STORE);
+  storageReadable = true;
+  session = storedOriginal !== null ? receiveSession(storedOriginal) : createSession();
   $('learner-explanation').value = session.explanation;
-  status(saved ? 'Your investigation is ready to continue.' : 'Both worlds fit everything you have observed. Choose a clamp, make a prediction, and try an experiment.');
+  status(storedOriginal !== null ? 'Your investigation is ready to continue.' : 'Both worlds fit everything you have observed. Choose a clamp, make a prediction, and try an experiment.');
 } catch {
-  session = createSession(); status('The saved notebook could not be reopened. A fresh investigation is ready.', true);
+  preservedUnreadable = storageReadable && storedOriginal !== null ? storedOriginal : null;
+  session = createSession();
+  status(preservedUnreadable !== null
+    ? 'The saved notebook could not be reopened. Its original text is preserved; this new lesson will not overwrite it.'
+    : 'Browser storage is unavailable. Save a notebook file to retain this lesson.', true);
 }
-render(); persist();
+render(); renderRecovery(); persist();
 try {
   const response = await fetch('/api/config'); if (!response.ok) throw new Error('Unavailable');
   config = (await response.json()).model;
