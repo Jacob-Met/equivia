@@ -1,3 +1,4 @@
+import { realpathSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
@@ -69,7 +70,16 @@ export async function smokeApplication(appRoot = projectRoot) {
   }
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+function isDirectEntryPoint() {
+  if (!process.argv[1]) return false;
+  try {
+    return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+if (isDirectEntryPoint()) {
   const target = process.argv[2] ? path.resolve(process.argv[2]) : projectRoot;
   console.log(JSON.stringify(await smokeApplication(target)));
 }
