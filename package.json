@@ -12,6 +12,7 @@
     "test": "node --test test/*.test.*",
     "verify": "node --test test/*.test.* && node tools/http-smoke.mjs",
     "package": "node tools/package.mjs",
-    "package:macos": "node tools/package-macos.mjs"
+    "package:macos": "node tools/package-macos.mjs",
+    "package:windows": "node tools/package-windows.mjs"
   }
 }

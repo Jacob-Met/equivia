@@ -38,6 +38,10 @@ The current lamp authoring interface requests exactly two observed variables, A 
 
 **Live model status:** no live Nebius response has yet been qualified in this source increment. Provider, guide, and authoring tests use clearly labeled synthetic transport fixtures. They establish application behavior, not successful NVIDIA execution, model quality, account availability, or contest eligibility.
 
+## Portable Windows build
+
+The [private Windows x64 build](docs/WINDOWS.md) includes its verified Node runtime and a local command launcher. It keeps the normal notebook address, runs without an installed Node, and leaves model assistance unconfigured.
+
 ## Portable Mac build
 
 The [private Mac build](docs/MACOS.md) includes a verified Node runtime and a Terminal launcher for Apple silicon. Its normal address preserves browser notebook storage; temporary sessions are optional. The deterministic laboratory works locally, and this launcher leaves model assistance unconfigured.
