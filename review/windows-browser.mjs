@@ -1,7 +1,7 @@
 /** Receives an already-running extracted Windows package; does not start a surrogate server. */
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 const flags = {};
@@ -24,20 +24,39 @@ await mkdir(out); await mkdir(path.join(out, 'responses'));
 const hash = b => createHash('sha256').update(b).digest('hex'), storageKey = 'equivia.notebook.v1';
 const report = { startedAt: new Date().toISOString(), sourceOrigin: origin, platform: process.platform, architecture: process.arch,
   sandboxRequested: true, executablePath: process.env.CHROME_EXECUTABLE, fixtureSHA256: hash(fixtureBytes), baseline,
-  checks: [], responses: [], screenshots: [], requests: [], unexpectedRequests: [], pageErrors: [], consoleErrors: [], failedRequests: [],
+  checks: [], events: [], cleanupErrors: [], responses: [], screenshots: [], requests: [], unexpectedRequests: [], pageErrors: [], consoleErrors: [], failedRequests: [],
   limitations: ['Headless native Windows browser in an isolated ephemeral context.',
     'Interactive Explorer/default-browser launch and persistent profile reopening are untested.',
     'Malformed notebooks, import races, and live providers are outside this receiving scope.'] };
-let browser, context, page, failure, responseSequence = 0;
+let browser, browserServer, context, page, failure, activeDownload, responseSequence = 0;
 const pending = new Set(), captureErrors = [];
 function track(promise) {
   pending.add(promise);
   promise.then(() => pending.delete(promise), error => { captureErrors.push(String(error)); pending.delete(promise); });
 }
 async function drain() { while (pending.size) await Promise.allSettled([...pending]); }
+async function event(name, detail = {}) {
+  const value = { at: new Date().toISOString(), name, ...detail };
+  report.events.push(value);
+  await appendFile(path.join(out, 'progress.jsonl'), JSON.stringify(value) + '\n');
+}
+async function deadline(promise, milliseconds, label) {
+  let timer;
+  // The race observes late rejection; expiry does not cancel the operation.
+  try { return await Promise.race([promise, new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error(label + ' exceeded ' + milliseconds + 'ms')), milliseconds);
+  })]); } finally { clearTimeout(timer); }
+}
 async function check(name, fn) {
-  try { report.checks.push({ name, passed: true, evidence: await fn() }); }
-  catch (e) { report.checks.push({ name, passed: false, error: String(e) }); throw e; }
+  await event('check.begin', { check: name });
+  try {
+    report.checks.push({ name, passed: true, evidence: await fn() });
+    await event('check.pass', { check: name });
+  } catch (e) {
+    report.checks.push({ name, passed: false, error: String(e) });
+    await event('check.fail', { check: name, error: String(e) });
+    throw e;
+  } finally { await writeFile(path.join(out, 'report.partial.json'), JSON.stringify(report, null, 2) + '\n'); }
 }
 async function notebook() { return page.evaluate(key => JSON.parse(localStorage.getItem(key)), storageKey); }
 async function importBytes(bytes, name) { await page.locator('#notebook-file').setInputFiles({ name, mimeType: 'application/json', buffer: bytes }); }
@@ -69,7 +88,13 @@ function verifyResponses() {
 try {
   const module = await import(pathToFileURL(path.resolve(process.env.PLAYWRIGHT_MODULE)).href);
   const chromium = module.chromium ?? module.default?.chromium; assert(chromium);
-  browser = await chromium.launch({ executablePath: process.env.CHROME_EXECUTABLE, headless: true, chromiumSandbox: true });
+  browserServer = await chromium.launchServer({
+    executablePath: process.env.CHROME_EXECUTABLE, headless: true, chromiumSandbox: true,
+    host: '127.0.0.1', port: 0, timeout: 45000,
+  });
+  report.browserPid = browserServer.process().pid;
+  await event('browser.owned', { pid: report.browserPid });
+  browser = await chromium.connect(browserServer.wsEndpoint(), { timeout: 15000 });
   report.browserVersion = browser.version();
   context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce', acceptDownloads: true, serviceWorkers: 'block' });
   await context.route('**/*', async route => {
@@ -119,17 +144,11 @@ try {
     const result = await page.locator('#experiment-result').innerText(); assert.match(result, /Both explanations are still possible/);
     await screenshot('02-desktop-intervention'); return { last, result, weights: await page.locator('#hypothesis-list .weight').allTextContents() };
   });
-  let saved, downloaded;
-  await check('saved notebook equals stored session', async () => {
-    saved = await notebook(); const pendingDownload = page.waitForEvent('download'); await page.locator('#save-notebook').click();
-    const download = await pendingDownload, file = 'saved-notebook.json'; await download.saveAs(path.join(out, file)); downloaded = await readFile(path.join(out, file));
-    assert.deepEqual(JSON.parse(downloaded), saved); return { file, sha256: hash(downloaded) };
-  });
+  const saved = await notebook(); let downloaded;
   await check('same-origin reload preserves exact session', async () => {
     await page.reload({ waitUntil: 'networkidle' }); assert.equal(new URL(page.url()).origin, origin);
     await waitStoredEqual(saved); assert.deepEqual(await notebook(), saved); await screenshot('03-desktop-reopened');
   });
-  await check('saved download reimports unchanged', async () => { await importBytes(downloaded, 'saved-notebook.json'); await waitStoredEqual(saved); assert.deepEqual(await notebook(), saved); });
   await check('keyboard disclosures reflect controlled panels', async () => {
     const parent = page.locator('details.method');
     if (!(await parent.getAttribute('open') !== null)) { await parent.locator('summary').focus(); await page.keyboard.press('Enter'); }
@@ -147,11 +166,52 @@ try {
     await drain(); verifyResponses(); assert.deepEqual(report.unexpectedRequests, []); assert.deepEqual(report.pageErrors, []);
     assert.deepEqual(report.consoleErrors, []); assert.deepEqual(report.failedRequests, []); return { receivedResponses: report.responses.length };
   });
-} catch (e) { failure = e; report.error = e?.stack ?? String(e); if (page) try { await screenshot('failure'); } catch {} }
+  await check('saved notebook equals stored session', async () => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    assert.deepEqual(await notebook(), saved);
+    const pendingDownload = page.waitForEvent('download', { timeout: 12000 });
+    pendingDownload.catch(() => {}); await page.locator('#save-notebook').click();
+    const download = await pendingDownload, file = 'saved-notebook.json';
+    activeDownload = download;
+    await event('download.started', { url: download.url(), filename: download.suggestedFilename() });
+    await deadline(download.saveAs(path.join(out, file)), 45000, 'Application notebook download');
+    await event('download.saved');
+    activeDownload = undefined; downloaded = await readFile(path.join(out, file));
+    assert.deepEqual(JSON.parse(downloaded), saved); return { file, sha256: hash(downloaded) };
+  });
+  await check('saved download reimports unchanged', async () => { await importBytes(downloaded, 'saved-notebook.json'); await waitStoredEqual(saved); assert.deepEqual(await notebook(), saved); });
+  await check('export and reimport introduce no browser errors', async () => {
+    await drain(); verifyResponses();
+    assert.deepEqual(report.unexpectedRequests, []); assert.deepEqual(report.pageErrors, []);
+    assert.deepEqual(report.consoleErrors, []); assert.deepEqual(report.failedRequests, []);
+  });
+} catch (e) {
+  failure = e; report.error = e?.stack ?? String(e);
+  if (report.checks.some(c => c.name === 'saved notebook equals stored session' && !c.passed)) {
+    report.checks.push({ name: 'saved download reimports unchanged', passed: false, blockedBy: 'Export file was not verified' });
+  }
+  if (page) try { await screenshot('failure'); } catch {}
+}
 finally {
-  await drain(); if (context) await context.close().catch(() => {}); if (browser) await browser.close().catch(() => {});
-  await drain(); report.finishedAt = new Date().toISOString(); report.passed = !failure;
+  async function cleanup(label, work, milliseconds = 15000) {
+    try { await deadline(work(), milliseconds, label); }
+    catch (e) { report.cleanupErrors.push({ label, error: String(e) }); }
+  }
+  if (activeDownload) await cleanup('Cancel owned pending download', () => activeDownload.cancel(), 10000);
+  await cleanup('Drain response captures', drain);
+  if (context) await cleanup('Close owned context', () => context.close());
+  if (browser) await cleanup('Close browser connection', () => browser.close());
+  if (browserServer) {
+    try { await deadline(browserServer.close(), 15000, 'Close owned browser process'); }
+    catch (e) {
+      report.forcedOwnedBrowserCleanup = { pid: report.browserPid, reason: String(e) };
+      await cleanup('Terminate owned browser server', () => browserServer.kill());
+    }
+  }
+  await cleanup('Finish response captures', drain);
+  report.finishedAt = new Date().toISOString();
+  report.passed = !failure && report.cleanupErrors.length === 0;
   await writeFile(path.join(out, 'report.json'), JSON.stringify(report, null, 2) + '\n');
 }
 console.log(JSON.stringify({ report: path.join(out, 'report.json'), passed: report.passed }));
-if (failure) { console.error(failure); process.exitCode = 1; }
+if (!report.passed) { if (failure) console.error(failure); process.exitCode = 1; }
