@@ -1,3 +1,4 @@
+import { realpathSync } from 'node:fs';
 import http from 'node:http';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -86,7 +87,16 @@ export function createServer({ env = process.env, invokeModel = callNemotron } =
   server.headersTimeout = 10000; server.requestTimeout = 55000;
   return server;
 }
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+function isDirectEntryPoint() {
+  if (!process.argv[1]) return false;
+  try {
+    return realpathSync(process.argv[1]) === realpathSync(fileURLToPath(import.meta.url));
+  } catch {
+    return false;
+  }
+}
+
+if (isDirectEntryPoint()) {
   const port = process.env.PORT ?? '4192';
   if (!/^\d{1,5}$/.test(port) || Number(port) > 65535) throw new Error('PORT must be an integer from 0 through 65535.');
   const server = createServer();
