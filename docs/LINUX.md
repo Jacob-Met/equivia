@@ -19,7 +19,7 @@ For a separate concurrent session, run `./EQUIVIA.sh --temporary-port`. A tempor
 
 Browser storage belongs to the browser profile and origin, not the extracted folder. Moving the complete package does not change the normal address. Use **Save notebook** for portable backups, particularly before changing browser profiles, origins or browser storage.
 
-This package preserves the maintained application's behavior. Its separately tracked unreadable-notebook recovery issue is not repaired by the Linux launcher. Keep a portable backup of important investigations.
+If saved work cannot be read or reopened, automatic saving pauses while you continue a temporary investigation. Follow the application's recovery instructions and use Save notebook to keep the current investigation as a file. Browser recovery copies remain in the same browser storage; download recovery files and keep portable notebook backups.
 
 The laboratory, exact calculations and notebook work locally. The launcher starts with a clean environment; ambient `PORT`, `NODE_OPTIONS` and model configuration are not passed through. Optional NVIDIA/Nebius assistance is not configured, and no live model performance is qualified by these package checks.
 
