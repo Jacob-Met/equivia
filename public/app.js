@@ -4,6 +4,7 @@ import { createSession, receiveSession, serializeSession, observe, experiment, t
 import { verifyAuthoredProposal } from '/src/model.js';
 import { forecast } from '/src/forecast.js';
 import { compareObservation } from '/src/observation-comparison.js';
+import { explainTrial } from '/src/trial-evidence.js';
 
 const $ = id => document.getElementById(id);
 const STORE = 'equivia.notebook.v1';
@@ -270,8 +271,70 @@ function renderObservationComparison() {
     destination.append(card);
   }
 }
+function renderTrialEvidence(worlds, history, historyIndex, trialNumber, wasOpen) {
+  const details = element('details', undefined, 'trial-evidence');
+  details.dataset.eventId = String(historyIndex + 1);
+  details.append(element('summary', `How trial ${trialNumber} changed the weights`));
+  const body = element('div', undefined, 'trial-evidence-body');
+  details.append(body);
+  let rendered = false;
+  const show = () => {
+    if (!details.open || rendered) return;
+    rendered = true;
+    try {
+      const explained = explainTrial(worlds, history, historyIndex);
+      body.append(element('p', 'These are the weights immediately before and after this recorded trial. Later evidence is left out.', 'trial-evidence-context'));
+      const models = element('div', undefined, 'trial-evidence-models');
+      for (const candidate of explained.hypotheses) {
+        const card = element('section', undefined, 'trial-evidence-model');
+        card.dataset.worldId = candidate.worldId;
+        card.append(element('h4', worlds.find(world => world.id === candidate.worldId)?.label || candidate.worldId));
+        const values = element('dl');
+        for (const [label, value, field] of [
+          ['Before this trial', candidate.beforeWeight, 'before'],
+          ['Chance of this result', candidate.likelihood, 'likelihood'],
+          ['After this trial', candidate.afterWeight, 'after'],
+        ]) {
+          const pair = element('div');
+          const description = element('dd', value === null ? 'Undefined' : `${percent(value)} (${frac(value)})`);
+          description.dataset.field = field;
+          pair.append(element('dt', label), description);
+          values.append(pair);
+        }
+        card.append(values);
+        if (candidate.beforeWeight?.numerator === '0') {
+          card.append(element('p', 'Already excluded by earlier recorded evidence.', 'trial-evidence-note'));
+        } else if (candidate.afterWeight?.numerator === '0') {
+          card.append(element('p', 'This result has zero probability here, so this trial excludes the candidate.', 'trial-evidence-note'));
+        }
+        models.append(card);
+      }
+      body.append(models);
+      const valid = explained.before.status === 'ok' && explained.after.status === 'ok';
+      if (!valid) {
+        body.append(element('p', 'The recorded evidence has no support under these candidates. A normalized weight is undefined; it cannot be interpreted as ordinary uncertainty.', 'trial-evidence-limit'));
+      } else {
+        body.append(element('p', 'Multiply each before-weight by that candidate’s chance of the recorded result, then rescale the two amounts to total 100%.', 'trial-evidence-method'));
+        const remaining = explained.hypotheses.filter(candidate => candidate.afterWeight.numerator !== '0').length;
+        const changedWeights = explained.hypotheses.some(candidate => candidate.beforeWeight.numerator !== candidate.afterWeight.numerator || candidate.beforeWeight.denominator !== candidate.afterWeight.denominator);
+        body.append(element('p', remaining > 1
+          ? changedWeights ? 'Both candidates still fit the recorded evidence. Their weights express relative support within these declared rules.' : 'This result leaves the conditional weights unchanged. Both candidates still fit the recorded evidence.'
+          : 'Only one declared candidate retains support. This conclusion depends on the supplied rules and does not exclude mechanisms outside this pair.', 'trial-evidence-limit'));
+      }
+      body.append(element('p', 'The mechanism stays fixed and every trial draws fresh random inputs. Inspecting this explanation does not run an experiment or reveal the hidden mechanism.', 'trial-evidence-assumptions'));
+    } catch {
+      body.replaceChildren(element('p', 'This trial could not be explained under the current candidate rules. Your notebook is unchanged.', 'trial-evidence-limit'));
+    }
+  };
+  details.addEventListener('toggle', show);
+  details.open = wasOpen;
+  if (wasOpen) show();
+  return details;
+}
 
 function renderJournal() {
+  const openEvidence = new Set([...$('journal-entries').querySelectorAll('.trial-evidence[open]')].map(details => Number(details.dataset.eventId)));
+  const history = publicHistory(session), worlds = session.worlds;
   const trials = session.history.filter(event => event.kind === 'intervene'); $('journal-entries').replaceChildren();
   if (!trials.length) $('journal-entries').append(element('p', 'Your observations agree with both explanations. The next entry is yours to create.', 'empty-journal'));
   trials.forEach((event, index) => {
@@ -279,6 +342,7 @@ function renderJournal() {
     const row = element('div', undefined, 'journal-entry'); const text = element('div');
     text.append(element('h3', `Held ${lamp} ${value ? 'on' : 'off'}`), element('p', `Predicted ${event.prediction * 100}% chance of ${lamp === 'A' ? 'B' : 'A'} being on.`));
     row.append(element('span', String(index + 1).padStart(2, '0'), 'entry-number'), text, element('span', outcomeLabel(event.outcome), 'entry-outcome'));
+    row.append(renderTrialEvidence(worlds, history, event.id - 1, index + 1, openEvidence.has(event.id)));
     $('journal-entries').append(row);
   });
 }
@@ -398,6 +462,7 @@ async function run(count) {
   finally { busy = false; availability(); }
 }
 function openSession(next, message) {
+  $('journal-entries').replaceChildren(); // Disclosures belong to the notebook that supplied their trials.
   session = next; revision++; clearPrediction(); $('experiment-result').hidden = true; $('guide-advice').hidden = true;
   $('learner-explanation').value = session.explanation; syncObservationChoice(); persist(); render(); status(message);
 }
