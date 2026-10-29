@@ -62,6 +62,27 @@ async function until(predicate, ms, label) {
   while (Date.now() < end) { const result = await predicate(); if (result) return result; await delay(25); }
   throw new Error('Timed out: ' + label);
 }
+// Poll in Node so the application can retain its existing script policy.
+async function waitForPage(p, predicate, argument) {
+  const end = performance.now() + 10000;
+  const timeout = () => new Error('Timed out: browser predicate');
+  while (true) {
+    const remaining = end - performance.now();
+    if (remaining <= 0) throw timeout();
+    let timer;
+    const result = await Promise.race([
+      p.evaluate(predicate, argument),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(timeout()), Math.ceil(remaining));
+      }),
+    ]).finally(() => clearTimeout(timer));
+    const after = end - performance.now();
+    if (after <= 0) throw timeout();
+    if (result) return result;
+    await delay(Math.min(25, after));
+  }
+}
+
 async function launch(args) {
   const p = startRaw(bundle, args);
   const url = await until(() => {
@@ -93,8 +114,8 @@ async function offline(origin) {
 }
 async function stored(p) { return p.evaluate(() => JSON.parse(localStorage.getItem('equivia.notebook.v1'))); }
 async function ready(p) {
-  await p.waitForFunction(() => Boolean(JSON.parse(localStorage.getItem('equivia.notebook.v1'))?.worlds?.length));
-  await p.waitForFunction(() => !document.querySelector('#model-status').textContent.includes('Checking'));
+  await waitForPage(p, () => Boolean(JSON.parse(localStorage.getItem('equivia.notebook.v1'))?.worlds?.length));
+  await waitForPage(p, () => !document.querySelector('#model-status').textContent.includes('Checking'));
 }
 async function listening(p) {
   const ids = (await readFile('/proc/' + p.child.pid + '/task/' + p.child.pid + '/children', 'utf8')).trim().split(/\s+/).filter(Boolean);
@@ -198,7 +219,7 @@ try {
     const before = await stored(page);
     await page.locator('#prediction-percent').fill('75');
     await page.locator('#run-one').click();
-    await page.waitForFunction(length => JSON.parse(localStorage.getItem('equivia.notebook.v1')).history.length === length + 1, before.history.length);
+    await waitForPage(page, length => JSON.parse(localStorage.getItem('equivia.notebook.v1')).history.length === length + 1, before.history.length);
     saved = await stored(page);
     assert.equal(saved.history.at(-1).kind, 'intervene');
     assert.equal(saved.history.at(-1).prediction, 0.75);
@@ -240,7 +261,7 @@ try {
     const p = await context.newPage(); p.setDefaultTimeout(10000);
     await p.goto(temporary.url, { waitUntil: 'networkidle' }); await ready(p);
     await p.locator('#notebook-file').setInputFiles(notebookPath);
-    await p.waitForFunction(length => JSON.parse(localStorage.getItem('equivia.notebook.v1')).history.length === length, saved.history.length);
+    await waitForPage(p, length => JSON.parse(localStorage.getItem('equivia.notebook.v1')).history.length === length, saved.history.length);
     assert.deepEqual(await stored(p), saved);
     await p.close(); await stop(temporary, 'SIGHUP');
     assert.ok(temporary.serverPids.every(pid => !exists(pid)));
