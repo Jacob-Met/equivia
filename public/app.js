@@ -5,6 +5,9 @@ import { verifyAuthoredProposal } from '/src/model.js';
 
 const $ = id => document.getElementById(id);
 const STORE = 'equivia.notebook.v1';
+const RECOVERY_LIMIT = 8;
+const recoveryKey = slot => `${STORE}.recovery.${slot}`;
+let preservedUnreadable = null, storageReadFailed = false, replacementUnverified = false;
 let session, config, revision = 0, busy = false, modelBusy = false, authoredProposal = null;
 const selected = name => document.querySelector(`input[name="${name}"]:checked`)?.value;
 const target = () => selected('target');
@@ -37,14 +40,107 @@ function setDisclosure(buttonId, panelId, expanded) {
 }
 function status(message, error = false) { $('status').textContent = message; $('status').classList.toggle('error', error); }
 function persist() {
+  // A fresh in-memory lesson must never replace an unreadable prior notebook.
+  // Download the current lesson or explicitly preserve the original first.
+  if (storageReadFailed || replacementUnverified || preservedUnreadable !== null) {
+    $('save-status').textContent = 'Automatic saving paused · save your investigation to a file';
+    return;
+  }
   try { localStorage.setItem(STORE, serializeSession(session)); $('save-status').textContent = 'Notebook kept on this device'; }
   catch { $('save-status').textContent = 'Save a notebook file to keep this investigation'; }
 }
 function changed() { revision++; $('guide-advice').hidden = true; persist(); }
-function download(text, name) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+function download(text, name, type = 'application/json') {
+  const url = URL.createObjectURL(new Blob([text], { type }));
   const link = element('a'); link.href = url; link.download = name; document.body.append(link); link.click(); link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 30000);
+}
+function downloadRecovery(text, name) {
+  // JSON escapes lone UTF-16 surrogates instead of silently replacing them in a Blob.
+  const copy = { schema: 'equivia.saved-notebook-recovery.v1', storageKey: STORE, storedText: text };
+  download(JSON.stringify(copy, null, 2) + '\n', name);
+  status('Recovery copy prepared. It contains saved text for repair and is not an ordinary notebook file.');
+}
+function recoveryCopies() {
+  const copies = [];
+  for (let slot = 1; slot <= RECOVERY_LIMIT; slot++) {
+    const value = localStorage.getItem(recoveryKey(slot));
+    if (value !== null) copies.push({ slot, value });
+  }
+  return copies;
+}
+function renderRecovery() {
+  const panel = $('notebook-recovery'), archive = $('recovery-archive');
+  archive.replaceChildren();
+  let copies = [];
+  try { copies = recoveryCopies(); } catch { /* Storage can be disabled. The current file export stays available. */ }
+  const active = preservedUnreadable !== null;
+  panel.hidden = !active && !storageReadFailed && !copies.length;
+  $('unreadable-explanation').hidden = !active && !storageReadFailed;
+  $('recovery-format').hidden = !active && !copies.length;
+  $('recovery-format').textContent = 'Recovery files contain saved text for repair; they are not ordinary notebook files. '
+    + (active ? 'The original recovery file contains the text first read when this page opened. ' : '')
+    + 'Browser recovery copies remain in this browser and can be lost if its storage is cleared.';
+  $('download-unreadable').hidden = !active;
+  $('replace-unreadable').hidden = !active;
+  $('replace-unreadable').disabled = replacementUnverified;
+  if (storageReadFailed) {
+    $('recovery-title').textContent = 'Saved notebook could not be read';
+    $('unreadable-explanation').textContent = 'Automatic saving is paused to protect any notebook already stored in this browser. You can work on a temporary investigation and use Save notebook to keep it as a file. Reload to try reading the saved notebook again.';
+  } else if (replacementUnverified) {
+    $('recovery-title').textContent = 'Replacement could not be verified';
+    $('unreadable-explanation').textContent = 'A separate browser recovery copy was verified before the replacement attempt. The current saved notebook could not be verified, so automatic saving remains paused. Use Save notebook to keep this investigation as a file, then reload to inspect what is stored.';
+  } else {
+    $('recovery-title').textContent = active ? 'Saved notebook needs recovery' : 'Browser recovery copies';
+    $('unreadable-explanation').textContent = 'The text read when this page opened could not be reopened as a notebook. Automatic saving is paused. You can work on a temporary investigation. Replacing the saved notebook first requires a separate browser recovery copy to be saved and verified.';
+  }
+  for (const { slot, value } of copies) {
+    const button = element('button', `Download browser recovery copy ${slot}`, 'outline');
+    button.addEventListener('click', () => downloadRecovery(value, `equivia-browser-recovery-${slot}.json`));
+    archive.append(button);
+  }
+  archive.hidden = !copies.length;
+}
+function focusRecoveryOutcome() {
+  ($('notebook-recovery').hidden ? $('save-notebook') : $('recovery-title')).focus();
+}
+function replaceStoredNotebook() {
+  if (preservedUnreadable === null || storageReadFailed || replacementUnverified) return;
+  const original = preservedUnreadable;
+  let replacementAttempted = false;
+  try {
+    if (localStorage.getItem(STORE) !== original) throw Error('The stored original changed in another window. Reload before replacing it.');
+    const next = serializeSession(session);
+    receiveSession(next); // The replacement must pass the complete executable replay validator.
+    const copies = recoveryCopies();
+    let slot = copies.find(item => item.value === original)?.slot;
+    if (!slot) {
+      for (let index = 1; index <= RECOVERY_LIMIT; index++) {
+        if (!copies.some(item => item.slot === index)) { slot = index; break; }
+      }
+    }
+    if (!slot) throw Error('All eight original-copy slots are occupied. Download earlier originals before using a fresh browser profile. Nothing was replaced.');
+    const key = recoveryKey(slot);
+    if (localStorage.getItem(key) === null) localStorage.setItem(key, original);
+    if (localStorage.getItem(key) !== original) throw Error('The original recovery copy could not be independently read back.');
+    if (localStorage.getItem(STORE) !== original) throw Error('The stored original changed while preserving the copy. Reload and inspect it.');
+    replacementAttempted = true;
+    localStorage.setItem(STORE, next);
+    if (localStorage.getItem(STORE) !== next) throw Error('The saved notebook did not match the attempted replacement.');
+    preservedUnreadable = null;
+    renderRecovery();
+    focusRecoveryOutcome();
+    $('save-status').textContent = 'Notebook kept on this device · recovery copy verified';
+    status('Current investigation saved after a separate browser recovery copy was verified.');
+  } catch (error) {
+    if (replacementAttempted) replacementUnverified = true;
+    renderRecovery();
+    if (replacementAttempted) focusRecoveryOutcome();
+    $('save-status').textContent = 'Automatic saving paused · save your investigation to a file';
+    status(replacementAttempted
+      ? `Replacement could not be verified. Automatic saving remains paused. ${error.message}`
+      : `Saved notebook not replaced: ${error.message}`, true);
+  }
 }
 function freshSeed() { return crypto.getRandomValues(new Uint32Array(1))[0]; }
 function clearPrediction() { $('prediction-percent').value = ''; }
@@ -264,6 +360,10 @@ $('save-notebook').addEventListener('click', () => {
   try { download(serializeSession(session), 'equivia-notebook.json'); status('Notebook saved with its worlds, predictions, ordered evidence and replay state.'); }
   catch (error) { status(error.message, true); }
 });
+$('download-unreadable').addEventListener('click', () => {
+  if (preservedUnreadable !== null) downloadRecovery(preservedUnreadable, 'equivia-original-recovery.json');
+});
+$('replace-unreadable').addEventListener('click', replaceStoredNotebook);
 $('open-notebook').addEventListener('click', () => $('notebook-file').click());
 $('notebook-file').addEventListener('change', async event => {
   const file = event.target.files[0]; event.target.value = ''; if (!file) return;
@@ -294,15 +394,22 @@ $('world-file').addEventListener('change', async event => {
   } catch (error) { status(error.message, true); }
 });
 
+let storedOriginal = null, storageReadable = false;
 try {
-  const saved = localStorage.getItem(STORE);
-  session = saved ? receiveSession(saved) : createSession();
+  storedOriginal = localStorage.getItem(STORE);
+  storageReadable = true;
+  session = storedOriginal !== null ? receiveSession(storedOriginal) : createSession();
   $('learner-explanation').value = session.explanation;
-  status(saved ? 'Your investigation is ready to continue.' : 'Both worlds fit everything you have observed. Choose a clamp, make a prediction, and try an experiment.');
+  status(storedOriginal !== null ? 'Your investigation is ready to continue.' : 'Both worlds fit everything you have observed. Choose a clamp, make a prediction, and try an experiment.');
 } catch {
-  session = createSession(); status('The saved notebook could not be reopened. A fresh investigation is ready.', true);
+  storageReadFailed = !storageReadable;
+  preservedUnreadable = storageReadable && storedOriginal !== null ? storedOriginal : null;
+  session = createSession();
+  status(preservedUnreadable !== null
+    ? 'The saved notebook could not be reopened. Its original text is preserved; this new lesson will not overwrite it.'
+    : 'The saved notebook could not be read. Automatic saving is paused; save this investigation as a file.', true);
 }
-render(); persist();
+render(); renderRecovery(); persist();
 try {
   const response = await fetch('/api/config'); if (!response.ok) throw new Error('Unavailable');
   config = (await response.json()).model;

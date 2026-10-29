@@ -25,6 +25,16 @@ Open the printed loopback address, normally `http://127.0.0.1:4192`. Set `PORT=0
 
 The notebook is saved in this browser's local storage. **Save notebook** exports the candidate worlds, predictions, ordered observations, and replay state. **Open notebook** validates the complete executable replay before replacing the current investigation. Invalid or altered outcomes leave the current work intact. The hidden identity and seed are present in the local notebook; this is a teaching tool, not a protected examination or secret storage system.
 
+## Recover a saved notebook
+
+Valid saved notebooks reopen normally. If a saved notebook cannot be reopened, EQUIVIA protects the text it first read and lets you continue with a temporary investigation. Automatic saving stays paused; use **Save notebook** to keep your current investigation as a portable file.
+
+**Back up and replace saved notebook** first creates a separate browser recovery copy and reads it back to verify that it matches the original text. Only then can replacement proceed. EQUIVIA keeps up to eight browser recovery copies and does not evict an existing copy to make room.
+
+You can download recovery copies as JSON files. These preserve the exact saved text captured by the recovery process, including the initial text when another tab has since changed the saved notebook. They are files for repair, not ordinary notebooks you can open with **Open notebook**. Browser recovery copies can disappear when browser storage is cleared; they are not backups on disk.
+
+If the initial saved notebook cannot be read, saving remains paused until you reload. If a replacement cannot be verified, automatic saving and further replacement attempts remain paused. In either case, use **Save notebook** to keep your current investigation, then reload to inspect the saved notebook again.
+
 ## Optional NVIDIA model assistance
 
 The laboratory works without a model connection. When an existing authorized Nebius route is configured, two substantive model roles are available:

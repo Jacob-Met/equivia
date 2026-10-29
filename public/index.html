@@ -15,6 +15,14 @@
     <nav aria-label="Investigation files"><button id="open-notebook" class="quiet">Open notebook</button><button id="save-notebook" class="outline">Save notebook <span aria-hidden="true">↗</span></button></nav>
   </header>
   <main>
+    <section id="notebook-recovery" class="notebook-recovery" aria-labelledby="recovery-title" hidden>
+      <p class="eyebrow">ORIGINAL NOTEBOOK · RECOVERY</p>
+      <h2 id="recovery-title" tabindex="-1">Saved notebook needs recovery</h2>
+      <p id="unreadable-explanation"></p>
+      <p id="recovery-format">Recovery files contain saved text for repair; they are not ordinary notebook files. Browser recovery copies remain in this browser and can be lost if its storage is cleared.</p>
+      <div class="recovery-actions"><button id="download-unreadable" class="outline">Download original recovery copy</button><button id="replace-unreadable" class="primary">Back up and replace saved notebook</button></div>
+      <div id="recovery-archive" class="recovery-actions" aria-label="Earlier original notebook copies"></div>
+    </section>
     <section class="introduction">
       <div><p class="eyebrow">INVESTIGATION 01 · THE MATCHING LAMPS</p><h1>Looking isn't<br>always knowing.</h1></div>
       <div class="brief"><p>These two lights always agree.<br>Does A drive B, or does B drive A?</p><p class="muted">Watch. Make a prediction.<br>Then change something.</p></div>
