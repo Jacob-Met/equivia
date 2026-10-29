@@ -35,7 +35,9 @@
         <div class="creator-actions">
           <button id="save-worksheet" class="outline" type="button" aria-describedby="worksheet-file-help worksheet-storage-help">Save worksheet draft</button>
           <button id="open-worksheet" class="outline" type="button" aria-describedby="worksheet-file-help worksheet-storage-help">Open worksheet draft</button>
+          <button id="restore-worksheet" class="outline" type="button" aria-describedby="worksheet-restore-help" disabled hidden>Restore previous worksheet</button>
         </div>
+        <p id="worksheet-restore-help" class="creator-help" hidden>Restore the worksheet replaced by the last file you opened, once. This replaces your current edits; save them first to keep them. Closing or reloading this tab loses the recovery copy.</p>
         <input id="worksheet-file" type="file" accept=".json,application/json" hidden>
         <p id="worksheet-feedback" class="creator-file-feedback" hidden></p>
         <p id="worksheet-storage-help" class="creator-help">There is no automatic worksheet saving. Save a draft before closing or reloading this tab, or opening another file. A worksheet draft is for editing here; export a checked world pair to use it in the laboratory.</p>

@@ -5,6 +5,7 @@ import { fractionToNumber } from '/src/engine.js';
 const $ = id => document.getElementById(id);
 let draft = createDraft(), revision = 0, fileIntent = 0;
 let checkedRevision = -1, checkedFingerprint = null;
+let previousWorksheet = null;
 
 function element(tag, text, className) {
   const node = document.createElement(tag);
@@ -185,6 +186,20 @@ $('save-worksheet').addEventListener('click', () => {
   }
 });
 
+$('restore-worksheet').addEventListener('click', () => {
+  if (!previousWorksheet) return;
+  // Restoring is a newer file intent: pending reads must not replace it.
+  fileIntent++;
+  draft = previousWorksheet;
+  previousWorksheet = null;
+  $('restore-worksheet').disabled = true;
+  $('restore-worksheet').hidden = true;
+  $('worksheet-restore-help').hidden = true;
+  fillControls();
+  markDirty('Previous worksheet restored. This replaced your current edits and used the recovery copy. Check this pair again before exporting.', true);
+  $('pair-title').focus();
+});
+
 function attachFileOpener(buttonId, inputId, { read, limit, tooLarge, opened, failed }) {
   $(buttonId).addEventListener('click', () => {
     // A newly opened picker supersedes earlier reads, including when cancelled.
@@ -203,9 +218,15 @@ function attachFileOpener(buttonId, inputId, { read, limit, tooLarge, opened, fa
         announce('The draft changed while the file was opening. It has been preserved; open the file again when ready.', { file: true });
         return;
       }
+      // Capture the live controls only once this open is ready to replace them.
+      // Failed, cancelled and stale reads leave the existing recovery copy alone.
+      previousWorksheet = readControls();
       draft = next;
       fillControls();
-      markDirty(opened, true);
+      $('restore-worksheet').disabled = false;
+      $('restore-worksheet').hidden = false;
+      $('worksheet-restore-help').hidden = false;
+      markDirty(opened + ' Restore previous worksheet can recover the edits this file replaced.', true);
     } catch (error) {
       if (intent !== fileIntent) return;
       announce(capturedRevision !== revision
