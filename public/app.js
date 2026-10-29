@@ -3,6 +3,7 @@ import { createSession, receiveSession, serializeSession, observe, experiment, t
   beliefState, learnerRequest, EXPERIMENTS, MAX_NOTEBOOK_BYTES } from '/src/session.js';
 import { verifyAuthoredProposal } from '/src/model.js';
 import { forecast } from '/src/forecast.js';
+import { compareObservation } from '/src/observation-comparison.js';
 
 const $ = id => document.getElementById(id);
 const STORE = 'equivia.notebook.v1';
@@ -225,6 +226,49 @@ function renderComparison(intervention = action(), destination = $('prediction-c
   }
   destination.append(element('p', comparison.separates ? 'This experiment predicts different distributions. A shared possible outcome can still leave both explanations open.' : Object.keys(intervention).length ? 'This experiment predicts the same distribution in both worlds. It cannot distinguish this pair.' : 'Passive observation predicts the same distribution in both worlds. Watching alone cannot distinguish this pair.'));
 }
+// Initialize once when the investigation is replaced. Inspection and trial controls stay independent.
+function syncObservationChoice() {
+  $('observation-choice').value = target() + selected('value');
+}
+function renderObservationComparison() {
+  if ($('observation-comparison').hidden) return;
+  const choice = $('observation-choice').value;
+  const selectedLamp = choice[0], selectedValue = Number(choice[1]);
+  const state = selectedValue ? 'on' : 'off';
+  $('observation-question').textContent = `Seeing ${selectedLamp} ${state}, or holding it ${state}?`;
+  const destination = $('observation-worlds'); destination.replaceChildren();
+  for (const world of session.worlds) {
+    const comparison = compareObservation(world, { [selectedLamp]: selectedValue });
+    const otherLamp = comparison.observedVariable;
+    const card = element('article', undefined, 'observation-model'); card.dataset.worldId = world.id;
+    card.append(element('h4', world.label || world.id));
+    const seeing = element('div', undefined, 'observation-seeing');
+    const holding = element('div', undefined, 'observation-holding');
+    seeing.append(element('h5', `Seeing ${selectedLamp} ${state}`));
+    holding.append(element('h5', `Holding ${selectedLamp} ${state}`));
+    const heldOn = comparison.held.outcomes.find(row => row.values[otherLamp] === 1).probability;
+    holding.append(element('p', `${otherLamp} on: ${percent(heldOn)} (${frac(heldOn)})`, 'observation-probability'));
+    let watchedOn;
+    if (comparison.watched.status === 'zero_evidence') {
+      seeing.append(element('p', `Undefined: this model never naturally produces ${selectedLamp} ${state}.`, 'observation-undefined'));
+    } else {
+      watchedOn = comparison.watched.outcomes.find(row => row.values[otherLamp] === 1).probability;
+      seeing.append(element('p', `${otherLamp} on: ${percent(watchedOn)} (${frac(watchedOn)})`, 'observation-probability'));
+    }
+    const support = comparison.watched.evidence;
+    card.append(seeing, holding, element('p',
+      `Natural ${selectedLamp} ${state} results: ${percent(support)} (${frac(support)}) of runs.`, 'observation-support'));
+    if (watchedOn) {
+      const same = watchedOn.numerator === heldOn.numerator && watchedOn.denominator === heldOn.denominator;
+      card.append(element('p', same
+        ? `The chance of ${otherLamp} being on is the same here. Selecting results and replacing a rule remain different operations.`
+        : `Selecting natural results and replacing the rule give different predictions for ${otherLamp} in this model.`,
+      'observation-conclusion'));
+    }
+    destination.append(card);
+  }
+}
+
 function renderJournal() {
   const trials = session.history.filter(event => event.kind === 'intervene'); $('journal-entries').replaceChildren();
   if (!trials.length) $('journal-entries').append(element('p', 'Your observations agree with both explanations. The next entry is yours to create.', 'empty-journal'));
@@ -262,6 +306,7 @@ function renderAssumptions() {
 function render() {
   renderAssumptions();
   renderObservations(); renderLamps(); renderHypotheses(); renderJournal(); renderDebrief(); availability();
+  renderObservationComparison();
   if (!$('prediction-comparison').hidden) renderComparison();
   $('world-source').textContent = JSON.stringify(session.worlds, null, 2);
   document.querySelector('.introduction .eyebrow').textContent = `INVESTIGATION · ${session.title.toUpperCase()}`;
@@ -352,7 +397,7 @@ async function run(count) {
 }
 function openSession(next, message) {
   session = next; revision++; clearPrediction(); $('experiment-result').hidden = true; $('guide-advice').hidden = true;
-  $('learner-explanation').value = session.explanation; persist(); render(); status(message);
+  $('learner-explanation').value = session.explanation; syncObservationChoice(); persist(); render(); status(message);
 }
 async function requestModel(kind, body) {
   const response = await fetch(`/api/${kind}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: AbortSignal.timeout(50000) });
@@ -377,6 +422,7 @@ async function guide() {
       document.querySelector(`[name="target"][value="${id}"]`).checked = true;
       document.querySelector(`[name="value"][value="${value}"]`).checked = true;
       clearPrediction(); availability(); renderComparison(advice.experiment.intervention); setDisclosure('show-predictions', 'prediction-comparison', true);
+      renderObservationComparison();
       status('Suggested experiment selected. Make your own prediction before spending a trial.');
     });
     const reject = element('button', 'That is not what I meant', 'text-button');
@@ -414,7 +460,7 @@ function displayAuthorProposal(result) {
   box.append(adopt, save);
 }
 
-document.querySelectorAll('[name="target"],[name="value"]').forEach(input => input.addEventListener('change', () => { clearPrediction(); availability(); if (!$('prediction-comparison').hidden) renderComparison(); }));
+document.querySelectorAll('[name="target"],[name="value"]').forEach(input => input.addEventListener('change', () => { clearPrediction(); availability(); if (!$('prediction-comparison').hidden) renderComparison(); renderObservationComparison(); }));
 $('prediction-percent').addEventListener('input', availability);
 $('run-one').addEventListener('click', () => run(1)); $('run-three').addEventListener('click', () => run(3));
 $('observe').addEventListener('click', () => {
@@ -422,6 +468,12 @@ $('observe').addEventListener('click', () => {
   catch (error) { status(error.message, true); }
 });
 $('show-predictions').addEventListener('click', () => { setDisclosure('show-predictions', 'prediction-comparison', $('prediction-comparison').hidden); if (!$('prediction-comparison').hidden) renderComparison(); });
+$('show-observation-comparison').addEventListener('click', () => {
+  const opening = $('observation-comparison').hidden;
+  setDisclosure('show-observation-comparison', 'observation-comparison', opening);
+  if (opening) { renderObservationComparison(); }
+});
+$('observation-choice').addEventListener('change', renderObservationComparison);
 $('inspect-worlds').addEventListener('click', () => { setDisclosure('inspect-worlds', 'world-source', $('world-source').hidden); });
 $('learner-explanation').addEventListener('input', event => { session.explanation = event.target.value; changed(); });
 $('ask-guide').addEventListener('click', guide);

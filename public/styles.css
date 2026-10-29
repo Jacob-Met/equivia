@@ -227,3 +227,22 @@ footer p { font:italic 12px Georgia,serif; margin:0; }
 
 /* The manual creator is a separate, continuous target beside the existing creator actions. */
 .worldmaker-controls>.creator-entry { display:flex; align-items:center; width:fit-content; max-width:100%; min-height:44px; padding:10px 0; font-size:12px; line-height:1.5; color:inherit; }
+
+/* Read-only comparison of selecting natural results and replacing a rule. */
+.observation-comparison-entry { margin-top:16px; padding-top:13px; border-top:1px solid var(--line); }
+#observation-comparison { margin-top:16px; font-size:12px; line-height:1.55; }
+#observation-comparison label { display:block; margin-bottom:6px; font-size:12px; font-weight:600; }
+#observation-choice { width:100%; min-height:42px; margin-bottom:17px; padding:9px 10px; border:1px solid #9cab97; border-radius:4px; color:var(--ink); background:var(--white); font:inherit; }
+#observation-choice:focus-visible { outline:3px solid #bd7748; outline-offset:4px; }
+#observation-question { font:normal 17px/1.35 Georgia,serif; margin:0 0 10px; }
+#observation-comparison p { font:inherit; margin:7px 0; }
+#observation-comparison .observation-explainer { color:var(--ink); }
+.observation-model { margin-top:17px; padding-top:15px; border-top:1px solid var(--line); overflow-wrap:anywhere; }
+.observation-model h4 { margin:0 0 12px; font-size:13px; line-height:1.45; }
+.observation-model h5 { margin:0; font-size:12px; font-weight:600; }
+.observation-seeing,.observation-holding { padding:9px 12px; margin:8px 0; border-left:3px solid #9cab97; background:var(--white); border-radius:0 3px 3px 0; }
+.observation-holding { border-left-color:var(--ink); }
+#observation-comparison .observation-probability { font-size:13px; font-weight:600; }
+#observation-comparison .observation-undefined { color:#774829; }
+#observation-comparison .observation-support,#observation-comparison .observation-conclusion,#observation-comparison .observation-footnote { color:var(--muted); font-size:12px; }
+#observation-comparison .observation-footnote { margin-top:17px; padding-top:13px; border-top:1px solid var(--line); }
