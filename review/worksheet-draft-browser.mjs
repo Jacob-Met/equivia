@@ -26,18 +26,36 @@ async function selectFile(button,path,target=page){
  const count=target===page?await target.evaluate(()=>window.__worksheetStatusChanges):undefined;
  await chooser.setFiles(path);return count;
 }
-async function open(button,path){const count=await selectFile(button,path);await page.waitForFunction(count=>window.__worksheetStatusChanges>count,count);assert.equal(await page.locator('#worksheet-feedback').isVisible(),true);assert.equal(await page.locator('#worksheet-feedback').getAttribute('aria-live'),null);assert.notEqual(await page.locator('#worksheet-feedback').getAttribute('role'),'status');}
+// Poll from Node so Playwright does not install a Function-based polling task
+// inside the page. Keep the application's CSP and Chromium sandbox intact.
+async function waitForPredicate(target,predicate,arg,label){
+ const deadline=performance.now()+30000;
+ while(true){
+  const remaining=deadline-performance.now();
+  assert.ok(remaining>0,`${label} timed out after 30000ms`);
+  let timer;
+  const ready=await Promise.race([
+   target.evaluate(predicate,arg),
+   new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(`${label} timed out after 30000ms`)),remaining);})
+  ]).finally(()=>clearTimeout(timer));
+  if(ready)return;
+  const pause=Math.min(50,deadline-performance.now());
+  assert.ok(pause>0,`${label} timed out after 30000ms`);
+  await new Promise(resolve=>setTimeout(resolve,pause));
+ }
+}
+async function open(button,path){const count=await selectFile(button,path);await waitForPredicate(page,count=>window.__worksheetStatusChanges>count,count,'Worksheet status update');assert.equal(await page.locator('#worksheet-feedback').isVisible(),true);assert.equal(await page.locator('#worksheet-feedback').getAttribute('aria-live'),null);assert.notEqual(await page.locator('#worksheet-feedback').getAttribute('role'),'status');}
 async function download(button,name){const pending=page.waitForEvent('download');await page.locator(button).click();const file=await pending;const path=join(output,name);await file.saveAs(path);const bytes=await readFile(path);receipt.downloads.push({path,bytes:bytes.length,sha256:hash(bytes),suggested:file.suggestedFilename()});return{path,bytes,data:JSON.parse(bytes)};}
 async function fixture(name,data){const path=join(output,name);await writeFile(path,typeof data==='string'?data:JSON.stringify(data));return path;}
 async function shot(name){const path=join(output,name);await page.screenshot({path});const b=await readFile(path);receipt.screenshots.push({path,bytes:b.length,sha256:hash(b)});}
 async function barrier(){await page.evaluate(()=>{window.__worksheetOriginalText=File.prototype.text;window.__worksheetReads=[];File.prototype.text=function(){const file=this;return new Promise((resolve,reject)=>window.__worksheetReads.push(()=>window.__worksheetOriginalText.call(file).then(resolve,reject)));};});}
 async function release(index){await page.evaluate(async index=>{await window.__worksheetReads[index]();await new Promise(r=>setTimeout(r,0));},index);}
 async function restore(){await page.evaluate(()=>{if(window.__worksheetOriginalText)File.prototype.text=window.__worksheetOriginalText;});}
-async function queued(n){await page.waitForFunction(n=>window.__worksheetReads?.length===n,n);}
+async function queued(n){await waitForPredicate(page,n=>window.__worksheetReads?.length===n,n,'Queued worksheet reads');}
 async function acceptedPair(path){await open('#open-pair',path);await page.locator('#check-pair').click();assert.equal(await page.locator('#save-pair').isDisabled(),false);assert.equal(await page.locator('#worksheet-feedback').isHidden(),true);}
 let worksheet,pair,blank,initialStorage;
 try{
- await lab.goto(base,{waitUntil:'networkidle'});await lab.locator('#observe').click();await lab.waitForFunction(()=>localStorage.getItem('equivia.notebook.v1')!==null);await page.goto(new URL('/creator',base).href,{waitUntil:'networkidle'});initialStorage=await storage();
+ await lab.goto(base,{waitUntil:'networkidle'});await lab.locator('#observe').click();await waitForPredicate(lab,()=>localStorage.getItem('equivia.notebook.v1')!==null,undefined,'Initial notebook persistence');await page.goto(new URL('/creator',base).href,{waitUntil:'networkidle'});initialStorage=await storage();
  await page.evaluate(()=>{window.__worksheetStatusChanges=0;new MutationObserver(()=>window.__worksheetStatusChanges++).observe(document.getElementById('creator-status'),{childList:true,subtree:true,characterData:true});});
  if(process.env.RECEIVE_MODE==='baseline'){
   await check('Pinned baseline lacks worksheet persistence and loses unfinished controls on reload',async()=>{
@@ -98,7 +116,7 @@ try{
   const previous=await lab.evaluate(()=>localStorage.getItem('equivia.notebook.v1'));assert.equal(previous,initialStorage['equivia.notebook.v1']);
   await selectFile('#import-worlds',pair.path,lab);await lab.locator('#author-result .primary').waitFor({state:'visible'});assert.equal(await lab.evaluate(()=>localStorage.getItem('equivia.notebook.v1')),previous,'Preview alone must not adopt');
   await lab.locator('#author-result .primary').click();const adopted=await lab.evaluate(()=>JSON.parse(localStorage.getItem('equivia.notebook.v1')));assert.equal(adopted.title,pair.data.title);assert.deepEqual(adopted.worlds,pair.data.worlds);
-  await lab.locator('input[name="target"][value="A"]').check();await lab.locator('input[name="value"][value="1"]').check();await lab.locator('#prediction-percent').fill('50');await lab.locator('#run-one').click();await lab.waitForFunction(()=>document.getElementById('budget').textContent.includes('5 / 6'));
+  await lab.locator('input[name="target"][value="A"]').check();await lab.locator('input[name="value"][value="1"]').check();await lab.locator('#prediction-percent').fill('50');await lab.locator('#run-one').click();await waitForPredicate(lab,()=>document.getElementById('budget').textContent.includes('5 / 6'),undefined,'Played trial budget');
   const played=await lab.evaluate(()=>JSON.parse(localStorage.getItem('equivia.notebook.v1')));assert.equal(played.history.filter(e=>e.kind==='intervene').length,1);assert.deepEqual(played.worlds,pair.data.worlds);assert.equal(await lab.locator('#experiment-result').isVisible(),true);
   const path=join(output,'checked-pair-adopted-and-played.png');await lab.screenshot({path});const bytes=await readFile(path);receipt.screenshots.push({path,bytes:bytes.length,sha256:hash(bytes)});assert.deepEqual(receipt.page_errors,[]);assert.deepEqual(receipt.console_errors,[]);assert.deepEqual(receipt.external_requests,[]);assert.deepEqual(receipt.post_requests,[]);return{adoptedWorldIds:played.worlds.map(w=>w.id),interventionTrials:1};
  });
