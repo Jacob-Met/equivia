@@ -25,20 +25,19 @@ const STORE = 'equivia.notebook.v1';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 async function step(name, fn) { await fn(); report.steps.push(name); }
 try {
-  const { createSession, observe, experiment, serializeSession, receiveSession } =
+  const { observe, experiment, receiveSession } =
     await import(pathToFileURL(path.join(appRoot, 'src/session.js')).href);
-  // Pick a reproducible genuine replay whose first A=1 trial is the shared 11 outcome.
-  let initial, expected;
-  for (let seed = 1; seed <= 1000; seed++) {
-    const candidate = createSession({ seed });
-    const trial = experiment(observe(candidate), { intervention: { A: 1 }, prediction: .75 });
-    if (trial.history.at(-1).outcome.B === 1) { initial = candidate; expected = trial; break; }
-  }
-  assert.ok(initial, 'No reproducible shared-outcome seed found');
+  // Receive the exact example shipped with the guide, including its executable replay.
+  const importPath = path.join(appRoot, 'docs/first-investigation/starting-notebook.json');
+  const startingBytes = await fs.readFile(importPath);
+  const initial = receiveSession(startingBytes.toString('utf8'));
+  assert.equal(initial.initialSeed, 2, 'The shipped guide uses seed 2');
+  const expected = experiment(observe(initial), { intervention: { A: 1 }, prediction: .75 });
+  assert.deepEqual(expected.history.at(-1).outcome, { A: 1, B: 1 }, 'The shipped example must produce the shared outcome');
   report.initialSeed = initial.initialSeed;
-  const importPath = path.join(out, 'starting-notebook.json');
-  await fs.writeFile(importPath, serializeSession(initial));
-  report.startingNotebookSHA256 = sha(await fs.readFile(importPath));
+  report.startingNotebookPath = importPath;
+  await fs.writeFile(path.join(out, 'starting-notebook.json'), startingBytes);
+  report.startingNotebookSHA256 = sha(startingBytes);
   report.serverSHA256 = sha(await fs.readFile(path.join(appRoot, 'server.mjs')));
   const env = { ...process.env, PORT: '0' };
   for (const key of Object.keys(env)) if (key.startsWith('NEBIUS_')) delete env[key];
