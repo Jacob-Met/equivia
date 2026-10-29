@@ -195,3 +195,32 @@ footer p { font:italic 12px Georgia,serif; margin:0; }
 .recovery-actions button { max-width:100%; white-space:normal; text-align:left; line-height:1.4; }
 #recovery-archive { padding-top:11px; border-top:1px solid #e0c6aa; }
 @media(max-width:580px) { .notebook-recovery { padding:16px 15px; } .recovery-actions { align-items:stretch; flex-direction:column; } .recovery-actions button { width:100%; } }
+
+/* The completed click keeps its own forecast, even when controls change. */
+.forecast-reflection { margin-bottom:20px; color:var(--ink); }
+.forecast-reflection h3 { font:22px/1.25 Georgia,serif; }
+.forecast-context { margin:8px 0 12px; }
+.forecast-question { margin:0 0 10px; }
+.forecast-comparison { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:0; }
+.forecast-metric { min-width:0; padding:12px 10px; border:1px solid var(--line); border-radius:4px; background:#f7f8f1; }
+.forecast-metric dt { font-size:11px; line-height:1.45; min-height:32px; }
+.forecast-metric dd { margin:7px 0 0; overflow-wrap:anywhere; }
+.forecast-metric dd strong { display:block; font:24px/1.25 Georgia,serif; }
+.forecast-exact { display:block; font-size:11px; line-height:1.5; overflow-wrap:anywhere; }
+.forecast-note { font-size:12px; line-height:1.6; color:#4a624d; margin:10px 0; }
+.forecast-counts h4 { font-size:12px; font-weight:600; margin:18px 0 10px; }
+.forecast-count-list { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); list-style:none; padding:0; margin:0; gap:8px; }
+.forecast-count { min-width:0; padding:10px 7px; border:1px solid var(--line); border-radius:4px; text-align:center; overflow-wrap:anywhere; }
+.forecast-count-label { display:block; font-size:11px; }
+.forecast-count strong { display:block; font-size:16px; }
+.forecast-count.observed-count { background:#edf1e5; border-color:#6b8062; }
+.forecast-observed { display:block; margin-top:4px; font-size:11px; font-weight:600; }
+.experiment-result .result-pairs { flex-wrap:wrap; }
+@media(max-width:580px) {
+  .forecast-comparison { grid-template-columns:1fr; gap:7px; }
+  .forecast-metric { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+  .forecast-metric dt { min-height:0; max-width:140px; font-size:12px; }
+  .forecast-metric dd { flex:0 1 auto; text-align:right; margin:0; min-width:0; }
+  .forecast-count-list { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .forecast-count-label,.forecast-exact,.forecast-observed { font-size:12px; }
+}

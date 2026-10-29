@@ -20,10 +20,12 @@ Open the printed loopback address, normally `http://127.0.0.1:4192`. Set `PORT=0
 2. Choose A or B and whether to hold it on or off.
 3. Enter any probability estimate from 0 through 100 percent for the other lamp being on.
 4. Run one trial or a batch of three. Every individual trial spends one of the six tokens.
-5. Compare the remaining candidates and exact conditional weights. The structural world stays fixed; trials draw fresh pseudorandom inputs.
+5. Compare your estimate with the models' prediction before the run, the observed results, and the revised prediction for a hypothetical next trial. A three-trial run also shows its exact count distribution. Review the remaining candidates and conditional weights; the structural world stays fixed while trials draw fresh pseudorandom inputs.
 6. Finish when ready to reveal the authored mechanism. The debrief distinguishes the hidden answer from what the recorded evidence establishes.
 
 The notebook is saved in this browser's local storage. **Save notebook** exports the candidate worlds, predictions, ordered observations, and replay state. **Open notebook** validates the complete executable replay before replacing the current investigation. Invalid or altered outcomes leave the current work intact. The hidden identity and seed are present in the local notebook; this is a teaching tool, not a protected examination or secret storage system.
+
+The [forecast reflection guide](docs/FORECAST.md) explains the single-trial and whole-run predictions, their time boundaries, and why reopening a notebook does not reconstruct past click groupings.
 
 ## Recover a saved notebook
 
