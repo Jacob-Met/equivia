@@ -121,10 +121,22 @@ async function absent(page) {
   await page.locator('#experiment-result').waitFor({ state: 'hidden' });
   assert.equal(await page.locator('#forecast-reflection').isVisible(), false);
 }
+async function waitText(page, selector, predicate, label) {
+  const until = performance.now() + 10000;
+  while (true) {
+    checkDeadline();
+    let remaining = until - performance.now();
+    assert.ok(remaining > 0, label + ' timed out');
+    const value = await page.locator(selector).textContent({ timeout: Math.max(1, Math.ceil(remaining)) });
+    checkDeadline();
+    remaining = until - performance.now();
+    assert.ok(remaining > 0, label + ' timed out');
+    if (value !== null && predicate(value)) return;
+    await new Promise(resolve => setTimeout(resolve, Math.min(50, remaining)));
+  }
+}
 async function waitImported(page) {
-  await page.waitForFunction(() =>
-    document.querySelector('#status')?.textContent.trim().startsWith('Notebook reopened.')
-  );
+  await waitText(page, '#status', value => value.trim().startsWith('Notebook reopened.'), 'Successful import status');
   await absent(page);
 }
 async function importFixture(page) {
@@ -140,8 +152,7 @@ async function setupAction(page, estimate = 37) {
 }
 async function waitAfter(page, expected) {
   await page.locator('#forecast-reflection').waitFor({ state: 'visible' });
-  await page.waitForFunction(value =>
-    document.querySelector('#forecast-after strong')?.textContent.trim() === value, expected);
+  await waitText(page, '#forecast-after strong', value => value.trim() === expected, 'Updated prediction');
 }
 async function reflection(page) {
   return page.locator('#forecast-reflection').innerText();
@@ -225,7 +236,8 @@ async function runChecks() {
       });
       assert.equal(report.keyboardFocus.active, true);
       const filename = path.join(out, 'keyboard-focus.png');
-      await page.screenshot({ path: filename, fullPage: true });
+      await page.locator('#prediction-percent').scrollIntoViewIfNeeded();
+      await page.screenshot({ path: filename, fullPage: false });
       report.screenshots.push({ path: filename, width: 1440, visualReview: 'pending', purpose: 'keyboard focus' });
     });
     await record('one-trial reflection uses entered estimate and before/after probabilities', async () => {
@@ -279,7 +291,7 @@ async function runChecks() {
       await page.locator('#notebook-file').setInputFiles({
         name: 'invalid.json', mimeType: 'application/json', buffer: Buffer.from('{not valid JSON')
       });
-      await page.waitForFunction(() => document.querySelector('#status')?.textContent.includes('Could not open that notebook:'));
+      await waitText(page, '#status', value => value.includes('Could not open that notebook:'), 'Rejected import status');
       assert.equal(await page.locator('#forecast-reflection').isVisible(), true);
       assert.equal(await reflection(page), beforeReflection);
       assert.deepEqual(await storage(page), beforeStorage);
@@ -332,9 +344,7 @@ async function runChecks() {
       const beforeReflection = await reflection(page);
       const beforeStorage = await storage(page);
       await page.locator('#run-one').dispatchEvent('click');
-      await page.waitForFunction(() => /not enough experimental trials remaining/i.test(
-        document.querySelector('#status')?.textContent || ''
-      ));
+      await waitText(page, '#status', value => /not enough experimental trials remaining/i.test(value), 'Exhausted budget status');
       assert.equal(await page.locator('#status').evaluate(element => element.classList.contains('error')), true);
       assert.equal(await reflection(page), beforeReflection);
       assert.deepEqual(await storage(page), beforeStorage);

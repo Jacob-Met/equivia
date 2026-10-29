@@ -40,3 +40,15 @@ node review/forecast-browser.mjs --app-root /path/to/equivia --playwright /path/
 ```
 
 A successful source receiver does not by itself qualify a platform archive. Retain its JSON, lifecycle record, screenshots and exit receipts alongside platform receiving evidence.
+
+## Maintained receiving followup — October 29, 2026
+
+The private Linux.3 and macOS.3 application archives were built from merge commit `f83b239f522b6b19deaca04ac0585beb32c20a6f`. Their exact hashes and downloaded-package receiving remain attached to the respective [Linux release](https://github.com/Jacob-Met/equivia/releases/tag/v0.1.0-linux.3) and [macOS release](https://github.com/Jacob-Met/equivia/releases/tag/v0.1.0-macos.3). This harness-only followup leaves those application archives unchanged.
+
+During Mac package receiving attempt 43, four cases passed before Playwright's `waitForFunction` polling raised an `unsafe-eval` content security policy exception. The attempt failed; its browser exited 0, launcher exited 130 after SIGINT, and server was absent. External wrappers subsequently passed all 10 cases on Mac and Linux using bounded host-side text polling, with the same application bytes and CSP. The earlier source run also passed, so these observations do not establish why its environment differed.
+
+The maintained harness now adopts those four predicate-preserving text waits. Each locator read receives the remaining portion of a monotonic 10-second budget; errors propagate, null text is not success, and false predicates poll at intervals up to 50 ms. The existing 60-second browser deadline, all 10 cases, expected values, server startup and cleanup remain unchanged. Keyboard evidence now uses a scrolled viewport screenshot because the earlier full-page capture did not reliably include the focused field.
+
+Lead verification through Renpō used Node 22.23.4 on Linux x64 with Chrome 156.0.8078.47. Syntax passed, the maintained standalone harness passed all 10 cases, and the browser observed 24 same-origin requests with no page or console errors. Its owned browser and source server both exited 0. This run used the original standalone CLI and source-server startup. The maintained harness SHA-256 is `7bc6fa11e8e74fb5af22e8a5883ca5d4f356694d7ae0545f77a4130ad8eb2cb4`. Root inspected the new standalone keyboard viewport PNG (SHA-256 `36dfdbf0dd26f9760de235d19de0088bc3cb6e62a57f55069ba754cc6857f395`): it visibly includes the estimate field and its focus outline. Its hash differed from the earlier package capture, so it was separately transferred, checked and viewed before acceptance.
+
+The retained source and pool workers reviewed the exact narrow change and brokered verification evidence. The standalone run is Linux evidence; Mac evidence remains the separately recorded package-wrapper run. Verification for this change consisted of syntax validation and the standalone browser course. The earlier 66 product tests, 13 CLI/HTTP checks and platform packaging results retain their original attribution. Sandbox was requested, without a separate enforcement claim; this work adds no platform or learning-efficacy qualification.
