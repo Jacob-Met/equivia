@@ -37,6 +37,87 @@ export function createDraft() {
   };
 }
 
+export const WORKSHEET_SCHEMA = 'equivia.worksheet.v1';
+export const WORKSHEET_MAX_BYTES = 65536;
+// Match the authored-pair identity domain; worksheet names may still be unfinished.
+const WORKSHEET_ID = /^[A-Za-z][A-Za-z0-9_-]{0,39}$/;
+const plainRecord = value => value !== null && typeof value === 'object'
+  && [Object.prototype, null].includes(Object.getPrototypeOf(value));
+
+function worksheetFields(value, fields, label) {
+  if (!plainRecord(value) || Reflect.ownKeys(value).length !== fields.length ||
+      fields.some(key => {
+        const descriptor = Object.getOwnPropertyDescriptor(value, key);
+        return !descriptor || !Object.hasOwn(descriptor, 'value');
+      })) {
+    fail('INVALID_WORKSHEET', 'The ' + label + ' has missing or unsupported fields.');
+  }
+}
+function worksheetText(value) {
+  if (typeof value !== 'string' || value.length > 100 || /[\r\n]/.test(value)) {
+    fail('INVALID_WORKSHEET', 'Worksheet titles and names must be single-line text of at most 100 characters.');
+  }
+  return value;
+}
+function worksheetValues(value) {
+  worksheetFields(value, ['title', 'worlds', 'clamp'], 'worksheet');
+  const title = worksheetText(value.title), entries = value.worlds;
+  if (!Array.isArray(entries) || entries.length !== 2 || Reflect.ownKeys(entries).length !== 3 ||
+      ['0', '1'].some(key => {
+        const descriptor = Object.getOwnPropertyDescriptor(entries, key);
+        return !descriptor || !Object.hasOwn(descriptor, 'value');
+      })) {
+    fail('INVALID_WORKSHEET', 'A worksheet needs exactly two candidate worlds.');
+  }
+  if (!CLAMPS.some(item => item.key === value.clamp)) {
+    fail('INVALID_WORKSHEET', 'Choose one supported single-lamp intervention.');
+  }
+  const worlds = Array.from(entries, world => {
+    worksheetFields(world, ['id', 'label', 'order', 'rootOn', 'childOff', 'childOn'], 'worksheet world');
+    if (typeof world.id !== 'string' || !WORKSHEET_ID.test(world.id)) {
+      fail('INVALID_WORKSHEET', 'A world identifier must start with a letter and contain at most 40 letters, digits, hyphens or underscores.');
+    }
+    const label = worksheetText(world.label);
+    if (!['AB', 'BA'].includes(world.order)) {
+      fail('INVALID_WORKSHEET', 'Choose A then B or B then A for each world.');
+    }
+    for (const key of ['rootOn', 'childOff', 'childOn']) {
+      if (!Number.isInteger(world[key]) || world[key] < 0 || world[key] > 8) {
+        fail('INVALID_WORKSHEET', 'Each chance must be a whole number of eighths from 0 through 8.');
+      }
+    }
+    return { id: world.id, label, order: world.order,
+      rootOn: world.rootOn, childOff: world.childOff, childOn: world.childOn };
+  });
+  if (worlds[0].id === worlds[1].id) fail('INVALID_WORKSHEET', 'The two worlds need distinct identifiers.');
+  return { title, worlds, clamp: value.clamp };
+}
+
+/** Preserve current editable values without claiming scientific acceptance. */
+export function serializeWorksheet(draft) {
+  return JSON.stringify({ schema: WORKSHEET_SCHEMA, ...worksheetValues(draft) }, null, 2) + '\n';
+}
+
+/** Read only the worksheet format; never trust or restore a saved check result. */
+export function draftFromWorksheet(raw) {
+  let value = raw;
+  if (typeof raw === 'string') {
+    if (new TextEncoder().encode(raw).length > WORKSHEET_MAX_BYTES) {
+      fail('WORKSHEET_TOO_LARGE', 'This worksheet draft exceeds the 65,536-byte file limit.');
+    }
+    try { value = JSON.parse(raw); }
+    catch { fail('INVALID_WORKSHEET', 'This file is not valid JSON.'); }
+  }
+  const marker = plainRecord(value) && Object.getOwnPropertyDescriptor(value, 'schema');
+  if (!marker || !Object.hasOwn(marker, 'value') || marker.value !== WORKSHEET_SCHEMA) {
+    fail('UNSUPPORTED_WORKSHEET_FILE', marker && marker.value === 'equivia.author.v1'
+      ? 'This is a world-pair file. Use Open an authored world pair.'
+      : 'This is not a supported worksheet draft. Choose a worksheet draft saved by EQUIVIA.');
+  }
+  worksheetFields(value, ['schema', 'title', 'worlds', 'clamp'], 'worksheet file');
+  return worksheetValues({ title: value.title, worlds: value.worlds, clamp: value.clamp });
+}
+
 /** Compile independent local probabilities to the existing binary truth tables. */
 export function buildProposal(draft) {
   if (!draft || typeof draft !== 'object' || !Array.isArray(draft.worlds) || draft.worlds.length !== 2) {

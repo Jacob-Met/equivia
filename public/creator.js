@@ -1,4 +1,5 @@
-import { createDraft, checkDraft, draftFromProposal } from '/src/creator.js';
+import { createDraft, checkDraft, draftFromProposal, serializeWorksheet,
+  draftFromWorksheet, WORKSHEET_MAX_BYTES } from '/src/creator.js';
 import { fractionToNumber } from '/src/engine.js';
 
 const $ = id => document.getElementById(id);
@@ -11,7 +12,11 @@ function element(tag, text, className) {
   if (className) node.className = className;
   return node;
 }
-function announce(message) { $('creator-status').textContent = message; }
+function announce(message, { file = false } = {}) {
+  $('creator-status').textContent = message;
+  $('worksheet-feedback').textContent = file ? message : '';
+  $('worksheet-feedback').hidden = !file;
+}
 function clampLabel(key) { return 'Hold ' + key[0] + (key[1] === '1' ? ' on' : ' off'); }
 function fraction(value) {
   return value.denominator === '1' ? value.numerator : value.numerator + '/' + value.denominator;
@@ -55,7 +60,7 @@ function fillControls() {
   $('check-clamp').value = draft.clamp;
   updateRuleLabels();
 }
-function markDirty(message = 'Draft changed. Check this pair again before exporting.') {
+function markDirty(message = 'Draft changed. Check this pair again before exporting.', file = false) {
   revision++;
   checkedRevision = -1;
   checkedFingerprint = null;
@@ -63,7 +68,7 @@ function markDirty(message = 'Draft changed. Check this pair again before export
   $('check-results').hidden = true;
   $('check-results').replaceChildren();
   updateRuleLabels();
-  announce(message);
+  announce(message, { file });
 }
 function distributionTable(caption, comparison, proposal) {
   const wrap = element('div', undefined, 'creator-table-scroll');
@@ -136,9 +141,9 @@ function performCheck() {
     : 'Check complete: this pair cannot be exported yet. ' + (result.error?.message || 'Review the comparisons.'));
   return result;
 }
-function downloadPair(proposal) {
-  const url = URL.createObjectURL(new Blob([JSON.stringify(proposal, null, 2) + '\n'], { type: 'application/json' }));
-  const link = element('a'); link.href = url; link.download = 'equivia-world-pair.json';
+function downloadJSON(content, filename) {
+  const url = URL.createObjectURL(new Blob([content], { type: 'application/json' }));
+  const link = element('a'); link.href = url; link.download = filename;
   document.body.append(link); link.click(); link.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
@@ -167,32 +172,58 @@ $('save-pair').addEventListener('click', () => {
   // Recheck the current controls at the export boundary, never a stale cached proposal.
   const result = checkDraft(current);
   if (!result.accepted) { performCheck(); return; }
-  downloadPair(result.proposal);
+  downloadJSON(JSON.stringify(result.proposal, null, 2) + '\n', 'equivia-world-pair.json');
   announce('World pair download requested. Open equivia-world-pair.json through the laboratory creator studio, then explicitly open it as a new investigation.');
 });
-$('open-pair').addEventListener('click', () => {
-  fileIntent++;
-  $('creator-file').click();
-});
-$('creator-file').addEventListener('change', async event => {
-  const file = event.target.files[0]; event.target.value = '';
-  if (!file) return;
-  const intent = ++fileIntent, capturedRevision = revision;
+$('save-worksheet').addEventListener('click', () => {
   try {
-    if (file.size > 65536) throw new Error('This world-pair file exceeds the existing 65,536-byte authoring limit.');
-    const next = draftFromProposal(await file.text());
-    if (intent !== fileIntent) return;
-    if (capturedRevision !== revision) {
-      announce('The draft changed while the file was opening. It has been preserved; open the file again when ready.');
-      return;
-    }
-    draft = next;
-    fillControls();
-    markDirty('World pair reopened. All original observation and clamp distributions were preserved exactly. Check the current draft before exporting.');
+    // Ordinary edits live in the controls until the next check or open.
+    downloadJSON(serializeWorksheet(readControls()), 'equivia-worksheet-draft.json');
+    announce('Worksheet draft download requested. This file keeps your editing values; it is not a checked world pair.', { file: true });
   } catch (error) {
-    if (intent !== fileIntent) return;
-    announce(capturedRevision !== revision
-      ? 'The draft changed while the file was opening and has been preserved.'
-      : 'Could not open that pair. The draft is unchanged. ' + error.message);
+    announce('Could not save this worksheet draft. Your edits are unchanged. ' + error.message, { file: true });
   }
+});
+
+function attachFileOpener(buttonId, inputId, { read, limit, tooLarge, opened, failed }) {
+  $(buttonId).addEventListener('click', () => {
+    // A newly opened picker supersedes earlier reads, including when cancelled.
+    fileIntent++;
+    $(inputId).click();
+  });
+  $(inputId).addEventListener('change', async event => {
+    const file = event.target.files[0]; event.target.value = '';
+    if (!file) return;
+    const intent = ++fileIntent, capturedRevision = revision;
+    try {
+      if (file.size > limit) throw new Error(tooLarge);
+      const next = read(await file.text());
+      if (intent !== fileIntent) return;
+      if (capturedRevision !== revision) {
+        announce('The draft changed while the file was opening. It has been preserved; open the file again when ready.', { file: true });
+        return;
+      }
+      draft = next;
+      fillControls();
+      markDirty(opened, true);
+    } catch (error) {
+      if (intent !== fileIntent) return;
+      announce(capturedRevision !== revision
+        ? 'The draft changed while the file was opening and has been preserved.'
+        : failed + ' The draft is unchanged. ' + error.message, { file: true });
+    }
+  });
+}
+
+attachFileOpener('open-pair', 'creator-file', {
+  read: draftFromProposal, limit: 65536,
+  tooLarge: 'This world-pair file exceeds the existing 65,536-byte authoring limit.',
+  opened: 'World pair reopened. All original observation and clamp distributions were preserved exactly. Check the current draft before exporting.',
+  failed: 'Could not open that pair.',
+});
+attachFileOpener('open-worksheet', 'worksheet-file', {
+  read: draftFromWorksheet, limit: WORKSHEET_MAX_BYTES,
+  tooLarge: 'This worksheet draft exceeds the 65,536-byte file limit.',
+  opened: 'Worksheet draft opened. Check this pair before exporting a world pair.',
+  failed: 'Could not open that worksheet draft.',
 });

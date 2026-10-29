@@ -48,3 +48,9 @@ body.creator-page .creator-status{min-height:1.6em;margin-block:1rem;font-weight
 body.creator-page .creator-skip{position:absolute;top:.5rem;left:.5rem;z-index:10;padding:.75rem 1rem;color:var(--ink);background:var(--white);transform:translateY(-200%)}
 body.creator-page .creator-skip:focus{transform:translateY(0)}
 @media(max-width:640px){body.creator-page .creator-main{width:calc(100% - 1.5rem);margin-top:1.5rem}body.creator-page .creator-worlds{grid-template-columns:minmax(0,1fr)}body.creator-page .creator-section-heading{align-items:stretch}body.creator-page .creator-check-controls{align-items:stretch}body.creator-page .creator-check-controls>button,body.creator-page .creator-actions>*{flex:1 1 100%}}
+
+body.creator-page .creator-worksheet-files{margin-block:1.25rem;padding-block:1rem;border-block:1px solid var(--line)}
+body.creator-page .creator-worksheet-files h3{margin-top:0}
+body.creator-page .creator-worksheet-files .creator-actions{margin-block:.75rem}
+body.creator-page .creator-worksheet-files p:last-child{margin-bottom:0}
+body.creator-page .creator-file-feedback{margin-block:.75rem;font-weight:700;overflow-wrap:anywhere}

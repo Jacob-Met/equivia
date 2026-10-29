@@ -28,7 +28,18 @@
         <button id="open-pair" class="outline" type="button" aria-describedby="creator-open-help">Open an authored world pair</button>
         <input id="creator-file" type="file" accept=".json,application/json" hidden>
       </div>
-      <p id="creator-open-help" class="creator-help">Opening a file replaces this worksheet's draft after successful checks. Export your current pair first if you want to keep it. Only rules this probability form can preserve are reopened. Other valid pairs can still be used in the laboratory. Opening here does not open an investigation.</p>
+      <p id="creator-open-help" class="creator-help">Opening an authored world pair replaces this worksheet's draft after successful checks. Save a worksheet draft first if you want to keep your current edits. Only rules this probability form can preserve are reopened. Other valid pairs can still be used in the laboratory. Opening here does not open an investigation.</p>
+      <section class="creator-worksheet-files" aria-labelledby="worksheet-files-heading">
+        <h3 id="worksheet-files-heading">Keep your worksheet</h3>
+        <p id="worksheet-file-help" class="creator-help">Save unfinished work to a file, even before the pair passes its checks. Opening a worksheet draft replaces this worksheet only. Check it again before exporting a world pair.</p>
+        <div class="creator-actions">
+          <button id="save-worksheet" class="outline" type="button" aria-describedby="worksheet-file-help worksheet-storage-help">Save worksheet draft</button>
+          <button id="open-worksheet" class="outline" type="button" aria-describedby="worksheet-file-help worksheet-storage-help">Open worksheet draft</button>
+        </div>
+        <input id="worksheet-file" type="file" accept=".json,application/json" hidden>
+        <p id="worksheet-feedback" class="creator-file-feedback" hidden></p>
+        <p id="worksheet-storage-help" class="creator-help">There is no automatic worksheet saving. Save a draft before closing or reloading this tab, or opening another file. A worksheet draft is for editing here; export a checked world pair to use it in the laboratory.</p>
+      </section>
       <div class="creator-title-field"><label for="pair-title">Pair title</label><input id="pair-title" name="pair-title" type="text" maxlength="100" value="Matching lamps"></div>
       <p id="creator-randomness" class="creator-help">Each trial uses independent uniform random inputs. Chances change in steps of 12.5% (one eighth).</p>
       <div class="creator-worlds">
@@ -70,7 +81,7 @@
       <div class="creator-actions"><button id="save-pair" class="primary" type="button" disabled>Export world pair</button><a class="outline" href="/" target="_blank" rel="noopener">Open laboratory <span class="creator-tab-note">(new tab)</span></a></div>
       <ol class="creator-next-steps"><li>Export the world pair as a JSON file.</li><li>In the laboratory, choose <strong>Open an authored world pair</strong> and select that file.</li><li>Review it, then choose <strong>Open as a new investigation</strong>.</li></ol>
       <p class="creator-help">Save any laboratory investigation you want to keep before adopting a new pair. Laboratory tabs share this browser's saved notebook. The new tab keeps this worksheet open; it does not create a separate notebook.</p>
-      <p class="creator-help">This worksheet keeps its draft in this tab. Export a checked pair to keep it, then reopen that same file here when you want to edit it.</p>
+      <p class="creator-help">Use Save worksheet draft to request a download of your editing values, including unfinished work. Confirm that your browser has kept the file before closing this tab. Open worksheet draft resumes editing here; it does not open a laboratory investigation.</p>
     </section>
     <p id="creator-status" class="creator-status" role="status" aria-atomic="true">Edit the matching-lamps example, then check your pair.</p>
     <noscript><p class="creator-help-box">This worksheet requires JavaScript to edit, check and export world pairs.</p></noscript>
