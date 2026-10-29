@@ -10,7 +10,9 @@ const STORE = 'equivia.notebook.v1';
 const RECOVERY_LIMIT = 8;
 const recoveryKey = slot => `${STORE}.recovery.${slot}`;
 let preservedUnreadable = null, storageReadFailed = false, replacementUnverified = false;
-let session, config, revision = 0, busy = false, modelBusy = false, authoredProposal = null;
+let session, config, revision = 0, busy = false, modelBusy = false;
+// File selections and model requests share one proposal intent; completion order does not decide what is reviewed.
+let authoringIntent = 0;
 const selected = name => document.querySelector(`input[name="${name}"]:checked`)?.value;
 const target = () => selected('target');
 const other = () => target() === 'A' ? 'B' : 'A';
@@ -446,17 +448,19 @@ async function guide() {
 function displayAuthorProposal(result) {
   const checked = verifyAuthoredProposal(result.proposal ?? result, { variableIds: ['A', 'B'] });
   if (!checked.accepted) throw new Error(checked.error?.message || 'The world pair did not pass the exact checks.');
-  authoredProposal = checked.proposal;
-  const box = $('author-result'); box.hidden = false; box.replaceChildren(element('h3', authoredProposal.title));
+  const proposal = checked.proposal;
+  const box = $('author-result'); box.hidden = false; box.replaceChildren(element('h3', proposal.title));
   box.append(element('p', 'Exact check passed: the observable distributions match, and the proposed intervention separates them. This is a bounded mathematical result for the supplied rules.'));
-  const source = element('details'); source.append(element('summary', 'Inspect the proposed executable worlds'), element('pre', JSON.stringify(authoredProposal, null, 2))); box.append(source);
+  const source = element('details'); source.append(element('summary', 'Inspect the proposed executable worlds'), element('pre', JSON.stringify(proposal, null, 2))); box.append(source);
   const adopt = element('button', 'Open as a new investigation', 'primary');
   adopt.addEventListener('click', () => {
-    openSession(createSession({ worlds: authoredProposal.worlds, title: authoredProposal.title, seed: freshSeed() }), 'The checked world pair is open. Its actual mechanism remains hidden until you choose to reveal it.');
+    // Explicitly opening the visible pair also retires any older pending proposal.
+    authoringIntent++;
+    openSession(createSession({ worlds: proposal.worlds, title: proposal.title, seed: freshSeed() }), 'The checked world pair is open. Its actual mechanism remains hidden until you choose to reveal it.');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
   const save = element('button', 'Save this world pair', 'text-button');
-  save.addEventListener('click', () => download(JSON.stringify(authoredProposal, null, 2) + '\n', 'equivia-world-pair.json'));
+  save.addEventListener('click', () => download(JSON.stringify(proposal, null, 2) + '\n', 'equivia-world-pair.json'));
   box.append(adopt, save);
 }
 
@@ -507,20 +511,31 @@ $('notebook-file').addEventListener('change', async event => {
 $('propose-worlds').addEventListener('click', async () => {
   const brief = $('world-brief').value.trim(); if (!brief) return status('Describe the kind of mechanisms you want to explore.', true);
   if (modelBusy || !config?.configured) return;
+  const intent = ++authoringIntent;
   modelBusy = true; availability(); $('propose-worlds').textContent = 'Constructing and checking worlds…';
   try {
     const result = await requestModel('author', { brief, variableIds: ['A', 'B'] });
+    if (intent !== authoringIntent) return;
     displayAuthorProposal(result); status('A world pair passed exact checks. Inspect its rules before opening a new investigation.');
-  } catch (error) { status(error.name === 'TimeoutError' ? 'World authoring took too long. Your current investigation is unchanged.' : error.message, true); }
+  } catch (error) {
+    if (intent !== authoringIntent) return;
+    status(error.name === 'TimeoutError' ? 'World authoring took too long. Your current investigation is unchanged.' : error.message, true);
+  }
   finally { modelBusy = false; $('propose-worlds').textContent = 'Propose a world pair ↗'; availability(); }
 });
 $('import-worlds').addEventListener('click', () => $('world-file').click());
 $('world-file').addEventListener('change', async event => {
   const file = event.target.files[0]; event.target.value = ''; if (!file) return;
+  const intent = ++authoringIntent;
   try {
     if (file.size > MAX_NOTEBOOK_BYTES) throw new Error('This world file is too large.');
-    displayAuthorProposal(JSON.parse(await file.text())); status('Imported world pair passed exact checks. Review it before opening.');
-  } catch (error) { status(error.message, true); }
+    const text = await file.text();
+    if (intent !== authoringIntent) return;
+    displayAuthorProposal(JSON.parse(text)); status('Imported world pair passed exact checks. Review it before opening.');
+  } catch (error) {
+    if (intent !== authoringIntent) return;
+    status(error.message, true);
+  }
 });
 
 let storedOriginal = null, storageReadable = false;
