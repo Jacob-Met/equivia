@@ -27,6 +27,8 @@ The notebook is saved in this browser's local storage. **Save notebook** exports
 
 The [forecast reflection guide](docs/FORECAST.md) explains the single-trial and whole-run predictions, their time boundaries, and why reopening a notebook does not reconstruct past click groupings.
 
+Start with [Your first EQUIVIA investigation](docs/FIRST_INVESTIGATION.md) for an illustrated, reproducible lesson: import the supplied notebook, make one intervention, interpret the revised forecast, then save and reopen your evidence.
+
 ## Recover a saved notebook
 
 Valid saved notebooks reopen normally. If a saved notebook cannot be reopened, EQUIVIA protects the text it first read and lets you continue with a temporary investigation. Automatic saving stays paused; use **Save notebook** to keep your current investigation as a portable file.
@@ -86,6 +88,18 @@ node review/browser-review.mjs receipts/browser
 ```
 
 Chrome runs with its sandbox enabled. The review serves the real application on ephemeral loopback ports and exercises downloads, reloads, budget use, exact posterior changes, malformed notebook preservation, explicit authored-case adoption, stale guide responses, and mobile geometry. Its separate guide/author server injects `TEST_STUB` responses; no cloud model is called. Screenshots require human visual review in addition to passing interaction assertions.
+
+Receive a complete notebook journey against an extracted source package:
+
+```sh
+PLAYWRIGHT_MODULE=/absolute/path/to/playwright/index.mjs \
+CHROME_EXECUTABLE=/absolute/path/to/google-chrome \
+node review/walkthrough-receiving.mjs \
+  /absolute/path/to/extracted/equivia \
+  /absolute/path/to/new-walkthrough-receipts
+```
+
+This starts the actual CLI, imports a reproducible notebook, checks the visible forecast and candidate weights, downloads through the browser, starts fresh, and reopens that file before reloading. It writes screenshots, the actual replay notebooks, and `walkthrough-receipt.json`. Use a new output directory for each run. Optional model assistance remains unconfigured. This is a scripted receiving check, not a learner study or a cloud-model qualification.
 
 The executed source and current evidence are recorded in [the work record](docs/WORK.md). The engine contract is in [ENGINE.md](docs/ENGINE.md); independent learning limitations are in [LEARNING_REVIEW.md](review/LEARNING_REVIEW.md).
 
