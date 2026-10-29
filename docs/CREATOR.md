@@ -20,6 +20,16 @@ A worksheet draft keeps the title, world names, rule orders, probability selecti
 
 Choose **Open worksheet draft** to resume those editing values. A successfully opened draft replaces the current worksheet and clears previous check results. Save your current worksheet first if you want to keep it. Choose **Check world pair** again before exporting; a saved draft never carries permission to export a checked pair.
 
+### Restore the worksheet a file replaced
+
+After successfully opening a worksheet draft or authored world pair, choose **Restore previous worksheet** to bring back the editing values that file replaced. This is one recovery step in the current tab. It preserves unfinished text, world IDs, probability selections and the selected intervention, but does not restore earlier check results or permission to export. Choose **Check world pair** again after restoring.
+
+Restoring **replaces your current edits** and uses up the recovery copy. Save the current worksheet first if you want to keep both versions. The button becomes available again after another successful file opening; only the worksheet immediately before that opening is retained. Invalid files, cancelled selections and discarded older reads do not replace the recovery copy.
+
+This recovery copy is not a saved file or an undo history. Closing or reloading the tab loses it. Continue to use **Save worksheet draft**, and confirm the download, to keep work beyond the current tab.
+
+### Supported files
+
 The file must have the supported `equivia.worksheet.v1` format and values this form can represent. Malformed or unsupported files leave the current worksheet intact. Editing the worksheet or selecting a newer file while a read is pending protects the newer work from the old result.
 
 Keep the file types distinct:
@@ -30,7 +40,7 @@ Keep the file types distinct:
 | Checked world pair | **Open an authored world pair** here or in the laboratory | Edit a representable pair, or review it for a new investigation |
 | Laboratory notebook | **Open notebook** in the laboratory | Resume an investigation and its evidence |
 
-Saving or opening a worksheet draft does not write the laboratory's saved notebook, adopt a pair, or contact a model provider. There is no automatic draft recovery from browser storage.
+Saving, opening or restoring a worksheet draft does not write the laboratory's saved notebook, adopt a pair, or contact a model provider. There is no automatic draft recovery from browser storage.
 
 The worksheet file is bounded to 65,536 UTF-8 bytes. Its top-level fields are `schema`, `title`, `worlds` and `clamp`. It contains exactly two worlds, each with `id`, `label`, `order`, `rootOn`, `childOff` and `childOn`. Titles and names preserve blank text and spaces, but must be single-line strings of at most 100 UTF-16 code units, matching the form's text-input limit. World IDs remain distinct letter-first identifiers of at most 40 letters, digits, hyphens or underscores. Orders are `AB` or `BA`; chances are integer eighths from 0 through 8; clamps are `A0`, `A1`, `B0` or `B1`. Missing or extra fields are rejected. Files contain editing values only, with no saved acceptance or investigation state.
 
@@ -65,7 +75,7 @@ In the laboratory, choose **Open an authored world pair**, select your exported 
 
 ## Reopen a saved pair
 
-The worksheet's **Open an authored world pair** button loads a valid, representable pair back into the editing controls. Opening a supported file replaces the worksheet draft, so save a worksheet draft first if you want to keep your current edits.
+The worksheet's **Open an authored world pair** button loads a valid, representable pair back into the editing controls. Opening a supported file replaces the worksheet draft, so save a worksheet draft first if you want to keep your current edits. **Restore previous worksheet** can recover the replaced editing values once while this tab stays open, as described above.
 
 Some valid laboratory files use random-input relationships that these probability controls cannot represent faithfully. The worksheet refuses those files rather than projecting them onto simpler rules. The original file remains usable through the laboratory's existing import flow.
 
