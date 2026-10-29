@@ -101,6 +101,7 @@ export function receiveSession(raw) {
     seed = result.nextSeed;
   }
   if (seed !== raw.seed || experiments > raw.budget) throw new Error('The notebook state or trial budget is inconsistent.');
+  if (raw.history.length + raw.budget - experiments > 64) throw new Error('The notebook has insufficient space for its remaining experiments.');
   return clone({ schema: SESSION_SCHEMA, title: raw.title.trim(), worlds: raw.worlds, activeWorldId: raw.activeWorldId,
     initialSeed: raw.initialSeed, seed, budget: raw.budget, history: raw.history, explanation: raw.explanation, revealed: raw.revealed });
 }
