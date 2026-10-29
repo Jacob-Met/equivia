@@ -115,7 +115,7 @@ try {
     launcher: 'EQUIVIA.sh', model_configuration: 'absent: launcher uses an explicit clean environment',
     limits: ['Private experimental Linux x64 portable folder for GNU libc; other architectures and musl are unqualified.',
       'Requires a browser and normal Linux system libraries; this is not a system installer.',
-      'The maintained notebook recovery issue is unchanged; keep portable notebook backups.',
+      'Browser recovery copies share this profile and origin; keep downloaded recovery files and portable notebook backups.',
       'Model fixtures do not qualify live model performance.'],
   };
   await writeFile(path.join(bundle, 'BUILD.json'), JSON.stringify(build, null, 2) + '\n');

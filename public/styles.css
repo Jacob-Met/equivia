@@ -186,3 +186,12 @@ footer p { font:italic 12px Georgia,serif; margin:0; }
   .hypothesis-heading { flex-wrap:wrap; gap:6px; }
 }
 @media(prefers-reduced-motion:reduce) { * { transition:none!important; animation:none!important; } }
+
+/* Notebook recovery uses the laboratory's paper/ink vocabulary rather than hiding durable-data choices in a toast. */
+.notebook-recovery { margin-top:22px; padding:19px 23px; border:2px solid #ad744b; background:#fff5e6; border-radius:6px; }
+.notebook-recovery h2 { font-size:23px; }
+.notebook-recovery p:not(.eyebrow) { max-width:860px; line-height:1.6; font-size:13px; }
+.recovery-actions { display:flex; flex-wrap:wrap; align-items:center; gap:9px; margin-top:13px; }
+.recovery-actions button { max-width:100%; white-space:normal; text-align:left; line-height:1.4; }
+#recovery-archive { padding-top:11px; border-top:1px solid #e0c6aa; }
+@media(max-width:580px) { .notebook-recovery { padding:16px 15px; } .recovery-actions { align-items:stretch; flex-direction:column; } .recovery-actions button { width:100%; } }
