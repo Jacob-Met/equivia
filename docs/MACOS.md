@@ -17,6 +17,8 @@ Normal launches use the maintained local address, http://127.0.0.1:4192, so the 
 
 The normal address preserves the notebook in the same browser profile. Use **Save notebook** for a portable backup.
 
+If the notebook saved in this browser fails validation, automatic saving pauses and the recovery panel preserves its original saved text. Use **Download original recovery copy** to keep that text as a repair file; it is not an ordinary notebook for **Open notebook**. You can continue working without overwriting the original and use **Save notebook** to keep your investigation as a portable file. Replacing the saved original requires **Back up and replace saved notebook**. Backups kept in browser storage share the original notebook's origin and quota, and can be lost if that storage is cleared.
+
 For a separate concurrent session, add `--temporary-port`. That session uses a new address, so its browser storage is separate. Use **Save notebook** before stopping a temporary session, then **Open notebook** to resume it later.
 
 The deterministic laboratory, exact calculations, and notebook work locally. This launcher starts with a clean environment and does not configure optional NVIDIA/Nebius assistance. Live model performance remains unqualified.
