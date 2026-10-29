@@ -27,6 +27,8 @@ The notebook is saved in this browser's local storage. **Save notebook** exports
 
 The [forecast reflection guide](docs/FORECAST.md) explains the single-trial and whole-run predictions, their time boundaries, and why reopening a notebook does not reconstruct past click groupings.
 
+Open **Seeing or holding? Compare both** beside the laboratory to inspect the difference between selecting naturally occurring results and replacing a lamp’s rule. The [comparison guide](docs/OBSERVATION_COMPARISON.md) explains the exact per-candidate probabilities and why a condition with no natural support is undefined. Its separate selector leaves your experiment and notebook unchanged and remains available after finishing.
+
 Start with [Your first EQUIVIA investigation](docs/FIRST_INVESTIGATION.md) for an illustrated, reproducible lesson: import the supplied notebook, make one intervention, interpret the revised forecast, then save and reopen your evidence.
 
 ## Recover a saved notebook
