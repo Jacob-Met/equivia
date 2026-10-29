@@ -1,0 +1,220 @@
+{
+  "schema": "equivia.session.v1",
+  "title": "The matching lamps",
+  "worlds": [
+    {
+      "schema": "equivia.scm.v1",
+      "id": "A-causes-B",
+      "label": "A drives B",
+      "observed": [
+        "A",
+        "B"
+      ],
+      "variables": [
+        {
+          "id": "A",
+          "parents": [],
+          "noiseBits": 1,
+          "table": [
+            0,
+            1
+          ]
+        },
+        {
+          "id": "B",
+          "parents": [
+            "A"
+          ],
+          "noiseBits": 0,
+          "table": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "schema": "equivia.scm.v1",
+      "id": "B-causes-A",
+      "label": "B drives A",
+      "observed": [
+        "A",
+        "B"
+      ],
+      "variables": [
+        {
+          "id": "B",
+          "parents": [],
+          "noiseBits": 1,
+          "table": [
+            0,
+            1
+          ]
+        },
+        {
+          "id": "A",
+          "parents": [
+            "B"
+          ],
+          "noiseBits": 0,
+          "table": [
+            0,
+            1
+          ]
+        }
+      ]
+    }
+  ],
+  "activeWorldId": "A-causes-B",
+  "initialSeed": 2,
+  "seed": 460377278,
+  "budget": 6,
+  "history": [
+    {
+      "id": 1,
+      "kind": "observe",
+      "intervention": {},
+      "outcome": {
+        "A": 0,
+        "B": 0
+      },
+      "prediction": null,
+      "beforeSeed": 2,
+      "afterSeed": 1017233273
+    },
+    {
+      "id": 2,
+      "kind": "observe",
+      "intervention": {},
+      "outcome": {
+        "A": 0,
+        "B": 0
+      },
+      "prediction": null,
+      "beforeSeed": 1017233273,
+      "afterSeed": 1975575172
+    },
+    {
+      "id": 3,
+      "kind": "observe",
+      "intervention": {},
+      "outcome": {
+        "A": 0,
+        "B": 0
+      },
+      "prediction": null,
+      "beforeSeed": 1975575172,
+      "afterSeed": 811535379
+    },
+    {
+      "id": 4,
+      "kind": "observe",
+      "intervention": {},
+      "outcome": {
+        "A": 1,
+        "B": 1
+      },
+      "prediction": null,
+      "beforeSeed": 811535379,
+      "afterSeed": 3186434646
+    },
+    {
+      "id": 5,
+      "kind": "observe",
+      "intervention": {},
+      "outcome": {
+        "A": 1,
+        "B": 1
+      },
+      "prediction": null,
+      "beforeSeed": 3186434646,
+      "afterSeed": 3079534013
+    },
+    {
+      "id": 6,
+      "kind": "observe",
+      "intervention": {},
+      "outcome": {
+        "A": 0,
+        "B": 0
+      },
+      "prediction": null,
+      "beforeSeed": 3079534013,
+      "afterSeed": 503495672
+    },
+    {
+      "id": 7,
+      "kind": "observe",
+      "intervention": {},
+      "outcome": {
+        "A": 0,
+        "B": 0
+      },
+      "prediction": null,
+      "beforeSeed": 503495672,
+      "afterSeed": 883904247
+    },
+    {
+      "id": 8,
+      "kind": "observe",
+      "intervention": {},
+      "outcome": {
+        "A": 0,
+        "B": 0
+      },
+      "prediction": null,
+      "beforeSeed": 883904247,
+      "afterSeed": 2028691434
+    },
+    {
+      "id": 9,
+      "kind": "observe",
+      "intervention": {},
+      "outcome": {
+        "A": 1,
+        "B": 1
+      },
+      "prediction": null,
+      "beforeSeed": 2028691434,
+      "afterSeed": 2255752769
+    },
+    {
+      "id": 10,
+      "kind": "observe",
+      "intervention": {},
+      "outcome": {
+        "A": 1,
+        "B": 1
+      },
+      "prediction": null,
+      "beforeSeed": 2255752769,
+      "afterSeed": 2992280236
+    },
+    {
+      "id": 11,
+      "kind": "observe",
+      "intervention": {},
+      "outcome": {
+        "A": 1,
+        "B": 1
+      },
+      "prediction": null,
+      "beforeSeed": 2992280236,
+      "afterSeed": 3024416283
+    },
+    {
+      "id": 12,
+      "kind": "observe",
+      "intervention": {},
+      "outcome": {
+        "A": 0,
+        "B": 0
+      },
+      "prediction": null,
+      "beforeSeed": 3024416283,
+      "afterSeed": 460377278
+    }
+  ],
+  "explanation": "",
+  "revealed": false
+}
