@@ -177,7 +177,18 @@ function renderObservations() {
 }
 function renderLamps() {
   const latest = session.history.at(-1);
-  if (!latest) return;
+  if (!latest) {
+    // Opening an investigation without trials must clear the previous result.
+    for (const id of ['A', 'B']) {
+      $(`lamp-${id}`).classList.remove('lit', 'clamped');
+      $(`state-${id}`).textContent = 'NO RESULT';
+      $(`clamp-${id}`).textContent = 'NO TRIAL RECORDED';
+      $(`lamp-${id}`).querySelector('svg').setAttribute(
+        'aria-label', `Lamp ${id}: no trial recorded in this investigation`
+      );
+    }
+    return;
+  }
   for (const id of ['A', 'B']) {
     const on = latest.outcome[id] === 1, clamped = Object.hasOwn(latest.intervention, id);
     $(`lamp-${id}`).classList.toggle('lit', on); $(`lamp-${id}`).classList.toggle('clamped', clamped);
