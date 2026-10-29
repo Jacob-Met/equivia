@@ -54,7 +54,7 @@ The current lamp authoring interface requests exactly two observed variables, A 
 
 ## Create a world pair by hand
 
-The [manual creator worksheet](docs/CREATOR.md) lets you edit two lamp mechanisms, check exact observational equality and intervention separation, and export a pair into the existing laboratory review flow. Open **Create a pair by hand (new tab)** in the creator studio, or visit `/creator`. It works locally without model configuration.
+The [manual creator worksheet](docs/CREATOR.md) lets you edit two lamp mechanisms, check exact observational equality and intervention separation, and export a pair into the existing laboratory review flow. Open **Create a pair by hand (new tab)** in the creator studio, or visit `/creator`. It works locally without model configuration. Use **Save worksheet draft** and **Open worksheet draft** to keep and resume unfinished editing in an explicit file. Draft saving does not require a passing pair check; **Export world pair** still does. Worksheet drafts are not saved automatically and do not change the laboratory notebook.
 
 ## Portable Windows build
 
