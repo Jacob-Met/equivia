@@ -185,6 +185,8 @@ footer p { font:italic 12px Georgia,serif; margin:0; }
   .masthead nav button { font-size:10px; min-height:36px; }
   .hypothesis-heading { flex-wrap:wrap; gap:6px; }
 }
+/* Keep authored hypothesis names readable on narrow phones. */
+@media(max-width:480px) { .hypothesis-list { grid-template-columns:1fr; } }
 @media(prefers-reduced-motion:reduce) { * { transition:none!important; animation:none!important; } }
 
 /* Notebook recovery uses the laboratory's paper/ink vocabulary rather than hiding durable-data choices in a toast. */
