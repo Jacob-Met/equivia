@@ -50,6 +50,10 @@ The current lamp authoring interface requests exactly two observed variables, A 
 
 **Live model status:** no live Nebius response has yet been qualified in this source increment. Provider, guide, and authoring tests use clearly labeled synthetic transport fixtures. They establish application behavior, not successful NVIDIA execution, model quality, account availability, or contest eligibility.
 
+## Create a world pair by hand
+
+The [manual creator worksheet](docs/CREATOR.md) lets you edit two lamp mechanisms, check exact observational equality and intervention separation, and export a pair into the existing laboratory review flow. Open **Create a pair by hand (new tab)** in the creator studio, or visit `/creator`. It works locally without model configuration.
+
 ## Portable Windows build
 
 The [private Windows x64 build](docs/WINDOWS.md) includes its verified Node runtime and a local command launcher. It keeps the normal notebook address, runs without an installed Node, and leaves model assistance unconfigured.

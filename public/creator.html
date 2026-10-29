@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#21393b">
+  <title>Create a world pair · EQUIVIA</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%23f3f1e9'/%3E%3Cpath d='M16 32h32' stroke='%235e7763' stroke-width='3'/%3E%3Ccircle cx='16' cy='32' r='8' fill='%23f3f1e9' stroke='%235e7763' stroke-width='3'/%3E%3Ccircle cx='48' cy='32' r='8' fill='%235e7763'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/creator.css">
+  <script type="module" src="/creator.js"></script>
+</head>
+<body class="creator-page">
+  <a class="creator-skip" href="#creator-main">Skip to worksheet</a>
+  <header class="masthead">
+    <a class="brand" href="/" target="_blank" rel="noopener">EQUIVIA</a>
+    <a class="outline" href="/" target="_blank" rel="noopener">Open laboratory <span class="creator-tab-note">(new tab)</span></a>
+  </header>
+  <main id="creator-main" class="creator-main">
+    <header class="creator-intro">
+      <p class="creator-eyebrow">Educator worksheet</p>
+      <h1>Create a world pair</h1>
+      <p>Build two possible explanations for the same observations. Check what an intervention reveals, then export your pair to try in the laboratory.</p>
+    </header>
+    <section class="creator-card" aria-labelledby="pair-heading">
+      <div class="creator-section-heading">
+        <div><p class="creator-eyebrow">1 · Create</p><h2 id="pair-heading">Define the two worlds</h2></div>
+        <button id="open-pair" class="outline" type="button" aria-describedby="creator-open-help">Open an authored world pair</button>
+        <input id="creator-file" type="file" accept=".json,application/json" hidden>
+      </div>
+      <p id="creator-open-help" class="creator-help">Opening a file replaces this worksheet's draft after successful checks. Export your current pair first if you want to keep it. Only rules this probability form can preserve are reopened. Other valid pairs can still be used in the laboratory. Opening here does not open an investigation.</p>
+      <div class="creator-title-field"><label for="pair-title">Pair title</label><input id="pair-title" name="pair-title" type="text" maxlength="100" value="Matching lamps"></div>
+      <p id="creator-randomness" class="creator-help">Each trial uses independent uniform random inputs. Chances change in steps of 12.5% (one eighth).</p>
+      <div class="creator-worlds">
+        <fieldset id="world-0" class="creator-world">
+          <legend>World 1</legend>
+          <label for="world-0-label">World name</label><input id="world-0-label" name="world-0-label" type="text" maxlength="100" value="World 1">
+          <label for="world-0-order">Rule order</label>
+          <select id="world-0-order" name="world-0-order" aria-describedby="world-0-rule-note"><option value="AB" selected>A → B: set A first, then B</option><option value="BA">B → A: set B first, then A</option></select>
+          <label id="world-0-root-label" for="world-0-root">Chance that A is on</label><select id="world-0-root" name="world-0-root" aria-describedby="creator-randomness"></select>
+          <label id="world-0-off-label" for="world-0-off">Chance that B is on when A is off</label><select id="world-0-off" name="world-0-off"></select>
+          <label id="world-0-on-label" for="world-0-on">Chance that B is on when A is on</label><select id="world-0-on" name="world-0-on"></select>
+          <p id="world-0-rule-note" class="creator-help">Set A first, then use A's state to set B's chance. Equal conditional chances mean A has no effect on B.</p>
+        </fieldset>
+        <fieldset id="world-1" class="creator-world">
+          <legend>World 2</legend>
+          <label for="world-1-label">World name</label><input id="world-1-label" name="world-1-label" type="text" maxlength="100" value="World 2">
+          <label for="world-1-order">Rule order</label>
+          <select id="world-1-order" name="world-1-order" aria-describedby="world-1-rule-note"><option value="AB">A → B: set A first, then B</option><option value="BA" selected>B → A: set B first, then A</option></select>
+          <label id="world-1-root-label" for="world-1-root">Chance that B is on</label><select id="world-1-root" name="world-1-root" aria-describedby="creator-randomness"></select>
+          <label id="world-1-off-label" for="world-1-off">Chance that A is on when B is off</label><select id="world-1-off" name="world-1-off"></select>
+          <label id="world-1-on-label" for="world-1-on">Chance that A is on when B is on</label><select id="world-1-on" name="world-1-on"></select>
+          <p id="world-1-rule-note" class="creator-help">Set B first, then use B's state to set A's chance. Equal conditional chances mean B has no effect on A.</p>
+        </fieldset>
+      </div>
+    </section>
+    <section class="creator-card" aria-labelledby="check-heading">
+      <p class="creator-eyebrow">2 · Check</p><h2 id="check-heading">See what an intervention reveals</h2>
+      <p id="clamp-help" class="creator-help">An intervention holds one lamp off or on, replacing its usual rule. Compare the resulting outcomes in both worlds.</p>
+      <div class="creator-check-controls">
+        <div class="creator-clamp-field"><label for="check-clamp">Intervention to inspect</label><select id="check-clamp" aria-describedby="clamp-help"><option value="A0">Hold A off</option><option value="A1" selected>Hold A on</option><option value="B0">Hold B off</option><option value="B1">Hold B on</option></select></div>
+        <button id="check-pair" class="primary" type="button">Check world pair</button>
+      </div>
+      <div id="check-results" class="creator-results" hidden></div>
+      <aside class="creator-help-box" aria-label="Understanding the check"><p><strong>A valid file is only the first check.</strong> For this kind of causal puzzle, the worlds must have exactly the same observational distribution and different distributions under the selected intervention. These are calculations for the entered rules. They do not establish a lesson's educational quality, and individual random trials can still look alike.</p></aside>
+    </section>
+    <section class="creator-card" aria-labelledby="export-heading">
+      <p class="creator-eyebrow">3 · Export and try</p><h2 id="export-heading">Take your pair into the laboratory</h2>
+      <p>Check your current draft before exporting. After any edit, check it again so the results describe the pair you save.</p>
+      <div class="creator-actions"><button id="save-pair" class="primary" type="button" disabled>Export world pair</button><a class="outline" href="/" target="_blank" rel="noopener">Open laboratory <span class="creator-tab-note">(new tab)</span></a></div>
+      <ol class="creator-next-steps"><li>Export the world pair as a JSON file.</li><li>In the laboratory, choose <strong>Open an authored world pair</strong> and select that file.</li><li>Review it, then choose <strong>Open as a new investigation</strong>.</li></ol>
+      <p class="creator-help">Save any laboratory investigation you want to keep before adopting a new pair. Laboratory tabs share this browser's saved notebook. The new tab keeps this worksheet open; it does not create a separate notebook.</p>
+      <p class="creator-help">This worksheet keeps its draft in this tab. Export a checked pair to keep it, then reopen that same file here when you want to edit it.</p>
+    </section>
+    <p id="creator-status" class="creator-status" role="status" aria-atomic="true">Edit the matching-lamps example, then check your pair.</p>
+    <noscript><p class="creator-help-box">This worksheet requires JavaScript to edit, check and export world pairs.</p></noscript>
+  </main>
+</body>
+</html>
