@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { sample } from '../src/engine.js';
 import assert from 'node:assert/strict';
 import { createSession, experiment, observe, receiveSession, serializeSession, beliefState,
   trialsRemaining, learnerRequest } from '../src/session.js';
@@ -74,4 +75,51 @@ test('revealing a completed investigation blocks further trial collection', () =
   const current = createSession({ seed: 18 }); current.revealed = true;
   assert.throws(() => observe(current));
   assert.throws(() => experiment(current, { intervention: { A: 1 }, prediction: .75 }));
+});
+
+function observationBoundary() {
+  let session = createSession({ seed: 37 });
+  while (session.history.length < 58) session = observe(session, Math.min(12, 58 - session.history.length));
+  return session;
+}
+function spendTrials(session, count) {
+  while (count > 0) {
+    const batch = Math.min(3, count);
+    session = experiment(session, { intervention: { A: 1 }, prediction: .5, count: batch });
+    count -= batch;
+  }
+  return session;
+}
+function appendReplayedObservation(session) {
+  const result = sample(session.worlds.find(world => world.id === session.activeWorldId),
+    { seed: session.seed, intervention: {}, observed: ['A', 'B'] });
+  session.history.push({ id: session.history.length + 1, kind: 'observe', intervention: {},
+    outcome: result.outcome, prediction: null, beforeSeed: session.seed, afterSeed: result.nextSeed });
+  session.seed = result.nextSeed;
+}
+
+test('reopened capacity-boundary notebooks can spend every remaining experiment token', () => {
+  const boundary = observationBoundary();
+  for (const used of [0, 1, 5, 6]) {
+    const original = spendTrials(boundary, used);
+    let reopened = receiveSession(serializeSession(original));
+    assert.deepEqual(reopened, original);
+    assert.equal(trialsRemaining(reopened), 6 - used);
+    reopened = spendTrials(reopened, trialsRemaining(reopened));
+    assert.equal(reopened.history.length, 64);
+    assert.equal(trialsRemaining(reopened), 0);
+    assert.deepEqual(receiveSession(serializeSession(reopened)), reopened);
+  }
+});
+
+test('replay-valid imports cannot consume the space reserved for unused experiment tokens', () => {
+  for (const [observations, used] of [[59, 0], [64, 0], [59, 5]]) {
+    const imported = spendTrials(observationBoundary(), used);
+    while (imported.history.filter(event => event.kind === 'observe').length < observations) {
+      appendReplayedObservation(imported);
+    }
+    const text = JSON.stringify(imported);
+    assert.throws(() => receiveSession(text), /remaining experiment/);
+    assert.equal(JSON.stringify(imported), text);
+  }
 });
