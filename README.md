@@ -25,6 +25,8 @@ Open the printed loopback address, normally `http://127.0.0.1:4192`. Set `PORT=0
 
 The notebook is saved in this browser's local storage. **Save notebook** exports the candidate worlds, predictions, ordered observations, and replay state. **Open notebook** validates the complete executable replay before replacing the current investigation. Invalid or altered outcomes leave the current work intact. The hidden identity and seed are present in the local notebook; this is a teaching tool, not a protected examination or secret storage system.
 
+Open **How trial … changed the weights** in the experiment notebook to inspect each recorded result's exact likelihood under the two candidates and its weights immediately before and after that trial. Earlier explanations exclude later evidence and can be inspected after reopening a notebook. The [trial evidence guide](docs/TRIAL_EVIDENCE.md) explains what these numbers mean.
+
 The [forecast reflection guide](docs/FORECAST.md) explains the single-trial and whole-run predictions, their time boundaries, and why reopening a notebook does not reconstruct past click groupings.
 
 Open **Seeing or holding? Compare both** beside the laboratory to inspect the difference between selecting naturally occurring results and replacing a lamp’s rule. The [comparison guide](docs/OBSERVATION_COMPARISON.md) explains the exact per-candidate probabilities and why a condition with no natural support is undefined. Its separate selector leaves your experiment and notebook unchanged and remains available after finishing.

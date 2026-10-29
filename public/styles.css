@@ -246,3 +246,26 @@ footer p { font:italic 12px Georgia,serif; margin:0; }
 #observation-comparison .observation-undefined { color:#774829; }
 #observation-comparison .observation-support,#observation-comparison .observation-conclusion,#observation-comparison .observation-footnote { color:var(--muted); font-size:12px; }
 #observation-comparison .observation-footnote { margin-top:17px; padding-top:13px; border-top:1px solid var(--line); }
+
+/* Optional, read-only explanation of an original journal trial. */
+.trial-evidence { grid-column:2/-1; min-width:0; margin-top:5px; border:1px solid #c8d3bf; border-radius:8px; background:#f5f7f0; }
+.trial-evidence summary { padding:12px 14px; cursor:pointer; color:#3c5530; font-size:12px; font-weight:600; line-height:1.5; }
+.trial-evidence summary::marker { color:#53753b; }
+.trial-evidence summary:focus-visible { outline:2px solid #53753b; outline-offset:3px; border-radius:5px; }
+.trial-evidence-body { padding:0 14px 14px; min-width:0; }
+.journal-entry .trial-evidence p { font-size:12px; line-height:1.65; color:#4c5f41; }
+.trial-evidence-models { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:13px 0; }
+.trial-evidence-model { min-width:0; padding:12px; border:1px solid #d1dbc8; border-radius:5px; background:#fffef8; }
+.trial-evidence-model h4 { margin:0 0 9px; font-size:14px; line-height:1.4; color:#334b29; overflow-wrap:anywhere; }
+.trial-evidence-model dl { margin:0; }
+.trial-evidence-model dl>div { display:flex; justify-content:space-between; gap:12px; margin-top:9px; align-items:baseline; }
+.trial-evidence-model dt { min-width:0; font-size:11px; line-height:1.5; color:#53644a; }
+.trial-evidence-model dd { max-width:58%; min-width:0; margin:0; text-align:right; font-size:12px; line-height:1.5; font-weight:600; color:#2d4725; overflow-wrap:anywhere; }
+.journal-entry .trial-evidence .trial-evidence-note { margin-top:10px; font-size:11px; }
+.journal-entry .trial-evidence .trial-evidence-limit { margin-top:10px; color:#334b29; }
+.journal-entry .trial-evidence .trial-evidence-assumptions { margin-top:10px; font-size:11px; }
+@media(max-width:650px) {
+  .trial-evidence-models { grid-template-columns:1fr; }
+  .trial-evidence summary { padding:11px; }
+  .trial-evidence-body { padding:0 11px 12px; }
+}

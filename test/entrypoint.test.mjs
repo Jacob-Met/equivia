@@ -31,14 +31,14 @@ async function link(t, target, destination, type) {
 test('actual server CLI starts through a symlinked file with spaces', { timeout: 20000 }, async t => {
   const directory = await fixture(t);
   if (!await link(t, path.join(root, 'server.mjs'), path.join(directory, 'server.mjs'), 'file')) return;
-  assert.equal((await smokeApplication(directory)).routes, 14);
+  assert.equal((await smokeApplication(directory)).routes, 15);
 });
 
 test('actual server CLI starts through a symlinked parent directory', { timeout: 20000 }, async t => {
   const directory = await fixture(t);
   const alias = path.join(directory, 'aliased source');
   if (!await link(t, root, alias, 'dir')) return;
-  assert.equal((await smokeApplication(alias)).routes, 14);
+  assert.equal((await smokeApplication(alias)).routes, 15);
 });
 
 test('importing the server through an alias does not start a listener', { timeout: 10000 }, async t => {
@@ -59,5 +59,5 @@ test('aliased HTTP smoke CLI executes checks instead of silently exiting', { tim
   const { stdout } = await exec(process.execPath, [alias, root], { env, timeout: 15000, maxBuffer: 1024 * 1024 });
   const result = JSON.parse(stdout.trim());
   assert.equal(result.ok, true);
-  assert.equal(result.routes, 14);
+  assert.equal(result.routes, 15);
 });
