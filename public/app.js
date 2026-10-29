@@ -425,15 +425,21 @@ $('download-unreadable').addEventListener('click', () => {
 });
 $('replace-unreadable').addEventListener('click', replaceStoredNotebook);
 $('open-notebook').addEventListener('click', () => $('notebook-file').click());
+let notebookSelection = 0;
 $('notebook-file').addEventListener('change', async event => {
   const file = event.target.files[0]; event.target.value = ''; if (!file) return;
-  const captured = revision;
+  const captured = revision, selection = ++notebookSelection;
   try {
     if (file.size > MAX_NOTEBOOK_BYTES) throw new Error('This notebook is too large.');
-    const next = receiveSession(await file.text());
+    const text = await file.text();
+    if (selection !== notebookSelection) return;
+    const next = receiveSession(text);
     if (captured !== revision) return status('The current investigation changed while opening the file. Open it again when ready.');
     openSession(next, 'Notebook reopened. Every recorded result was checked against its executable replay.');
-  } catch (error) { status(`Could not open that notebook: ${error.message}`, true); }
+  } catch (error) {
+    if (selection !== notebookSelection) return;
+    status(`Could not open that notebook: ${error.message}`, true);
+  }
 });
 $('propose-worlds').addEventListener('click', async () => {
   const brief = $('world-brief').value.trim(); if (!brief) return status('Describe the kind of mechanisms you want to explore.', true);
