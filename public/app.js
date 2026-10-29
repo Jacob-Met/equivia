@@ -23,6 +23,13 @@ function predictionValue() {
   const raw = $('prediction-percent').value.trim(), value = Number(raw);
   return raw !== '' && Number.isFinite(value) && value >= 0 && value <= 100 ? value / 100 : undefined;
 }
+// Present recorded numeric predictions without binary multiplication tails.
+// Keep tiny positive values and avoid rounding an interior prediction to 100%.
+function predictionPercent(prediction) {
+  const raw = prediction * 100;
+  const rounded = Number(raw.toPrecision(15));
+  return `${prediction < 1 && rounded === 100 ? raw : rounded}%`;
+}
 const frac = value => value.denominator === '1' ? value.numerator : `${value.numerator}/${value.denominator}`;
 const percent = value => {
   if (value.numerator === '0') return '0%';
@@ -340,7 +347,7 @@ function renderJournal() {
   trials.forEach((event, index) => {
     const [lamp, value] = Object.entries(event.intervention)[0];
     const row = element('div', undefined, 'journal-entry'); const text = element('div');
-    text.append(element('h3', `Held ${lamp} ${value ? 'on' : 'off'}`), element('p', `Predicted ${event.prediction * 100}% chance of ${lamp === 'A' ? 'B' : 'A'} being on.`));
+    text.append(element('h3', `Held ${lamp} ${value ? 'on' : 'off'}`), element('p', `Predicted ${predictionPercent(event.prediction)} chance of ${lamp === 'A' ? 'B' : 'A'} being on.`));
     row.append(element('span', String(index + 1).padStart(2, '0'), 'entry-number'), text, element('span', outcomeLabel(event.outcome), 'entry-outcome'));
     row.append(renderTrialEvidence(worlds, history, event.id - 1, index + 1, openEvidence.has(event.id)));
     $('journal-entries').append(row);
