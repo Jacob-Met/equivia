@@ -11,7 +11,7 @@ const exec = promisify(execFile);
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const requiredFiles = [
   'package.json', 'server.mjs', 'public/index.html', 'public/styles.css', 'public/app.js',
-  'src/engine.js', 'src/model.js', 'src/provider.js', 'src/session.js',
+  'src/engine.js', 'src/model.js', 'src/provider.js', 'src/session.js', 'src/forecast.js',
 ];
 const optionalFiles = ['README.md', 'LICENSE', 'LICENSE.md', '.env.example'];
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');

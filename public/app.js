@@ -2,6 +2,7 @@ import { distribution, compareWorlds, fractionToNumber, lampWorlds } from '/src/
 import { createSession, receiveSession, serializeSession, observe, experiment, trialsRemaining,
   beliefState, learnerRequest, EXPERIMENTS, MAX_NOTEBOOK_BYTES } from '/src/session.js';
 import { verifyAuthoredProposal } from '/src/model.js';
+import { forecast } from '/src/forecast.js';
 
 const $ = id => document.getElementById(id);
 const STORE = 'equivia.notebook.v1';
@@ -254,9 +255,64 @@ function render() {
   $('world-source').textContent = JSON.stringify(session.worlds, null, 2);
   document.querySelector('.introduction .eyebrow').textContent = `INVESTIGATION · ${session.title.toUpperCase()}`;
 }
-function showResult(previousLength) {
+const publicHistory = state => state.history.map(({ intervention, outcome }) => ({ intervention, outcome }));
+function renderForecastReflection(recent, reflection) {
+  const { before, after, intervention, estimate } = reflection;
+  const [clampedLamp, clampedValue] = Object.entries(intervention)[0];
+  const lamp = before.observedVariable;
+  const successes = recent.filter(event => event.outcome[lamp] === 1).length;
+  const panel = element('section', undefined, 'forecast-reflection');
+  panel.id = 'forecast-reflection';
+  panel.setAttribute('aria-labelledby', 'forecast-title');
+  const heading = element('h3', 'Reflect on this run'); heading.id = 'forecast-title';
+  panel.append(heading, element('p',
+    before.trials + ' trial' + (before.trials === 1 ? '' : 's') + ' · held ' + clampedLamp + ' ' +
+    (clampedValue ? 'on' : 'off') + ' · ' + lamp + ' was on in ' + successes + ' of ' + before.trials + '.',
+    'forecast-context'));
+  panel.append(element('p', 'Chance of ' + lamp + ' being on in one trial with this clamp:', 'forecast-question'));
+  const comparisons = element('dl', undefined, 'forecast-comparison');
+  const metric = (label, value, id, exact) => {
+    const item = element('div', undefined, 'forecast-metric');
+    item.append(element('dt', label));
+    const number = element('dd'); number.id = id;
+    number.append(element('strong', value));
+    if (exact) number.append(element('span', '(' + frac(exact) + ')', 'forecast-exact'));
+    item.append(number); comparisons.append(item);
+  };
+  metric('Your estimate before', estimate + '%', 'forecast-estimate');
+  metric('Models before this run', percent(before.singleTrialProbability), 'forecast-before', before.singleTrialProbability);
+  metric('Updated for a next trial', percent(after.singleTrialProbability), 'forecast-after', after.singleTrialProbability);
+  panel.append(comparisons, element('p',
+    'The updated value uses all results from this run. It describes a hypothetical next trial with the same clamp, not the trials already recorded.',
+    'forecast-note'));
+  if (before.trials > 1) {
+    const counts = element('div', undefined, 'forecast-counts');
+    counts.id = 'forecast-counts';
+    const title = element('h4', 'Before-run prediction for the whole ' + before.trials + '-trial count');
+    const list = element('ol', undefined, 'forecast-count-list');
+    for (const entry of before.counts) {
+      const item = element('li', undefined, 'forecast-count' + (entry.count === successes ? ' observed-count' : ''));
+      item.dataset.count = String(entry.count);
+      item.append(element('span', entry.count + ' of ' + before.trials + ' on', 'forecast-count-label'),
+        element('strong', percent(entry.probability)),
+        element('span', '(' + frac(entry.probability) + ')', 'forecast-exact'));
+      if (entry.count === successes) item.append(element('span', 'Observed', 'forecast-observed'));
+      list.append(item);
+    }
+    counts.append(title, list, element('p',
+      'One hidden world governs the whole run. These probabilities combine each candidate’s count prediction using the evidence available before this click.',
+      'forecast-note'));
+    panel.append(counts);
+  }
+  panel.append(element('p',
+    'A short run need not match a probability estimate. This comparison is a prompt to revise your reasoning, not a score or proof of a mechanism.',
+    'forecast-note'));
+  return panel;
+}
+
+function showResult(previousLength, reflection) {
   const recent = session.history.slice(previousLength), beliefs = beliefState(session);
-  const container = $('experiment-result'); container.hidden = false; container.replaceChildren();
+  const container = $('experiment-result'); container.hidden = false; container.replaceChildren(renderForecastReflection(recent, reflection));
   const chips = element('div', undefined, 'result-pairs'); recent.forEach(event => chips.append(element('span', outcomeLabel(event.outcome), 'result-chip'))); container.append(chips);
   const viable = beliefs.hypotheses.filter(item => item.probability.numerator !== '0');
   container.append(element('strong', viable.length === 2 ? 'Both explanations are still possible.' : 'One explanation no longer fits this result.'));
@@ -273,8 +329,12 @@ async function run(count) {
   const prediction = predictionValue(); if (prediction === undefined) return;
   busy = true; availability(); const before = session.history.length;
   try {
-    const next = experiment(session, { intervention: action(), prediction: Number(prediction), count });
-    session = next; changed(); render(); showResult(before);
+    const intervention = action(), estimate = String(Number($('prediction-percent').value.trim()));
+    const initialForecast = forecast(session.worlds, publicHistory(session), intervention, count);
+    const next = experiment(session, { intervention, prediction: Number(prediction), count });
+    const updatedForecast = forecast(next.worlds, publicHistory(next), intervention, 1);
+    const reflection = { before: initialForecast, after: updatedForecast, intervention, estimate };
+    session = next; changed(); render(); showResult(before, reflection);
     status(`${count} experimental trial${count === 1 ? '' : 's'} recorded. ${trialsRemaining(session)} remaining.`);
   } catch (error) { status(error.message, true); }
   finally { busy = false; availability(); }

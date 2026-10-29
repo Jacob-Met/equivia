@@ -35,7 +35,7 @@ export async function smokeApplication(appRoot = projectRoot) {
     const health = await get('/health');
     assert.equal(health.status, 200);
     assert.deepEqual(await health.json(), { ok: true, application: 'equivia' });
-    for (const route of ['/', '/styles.css', '/app.js', '/src/engine.js', '/src/model.js', '/src/session.js']) {
+    for (const route of ['/', '/styles.css', '/app.js', '/src/engine.js', '/src/model.js', '/src/session.js', '/src/forecast.js']) {
       const response = await get(route);
       assert.equal(response.status, 200, `${route} should be served`);
       assert.ok((await response.arrayBuffer()).byteLength > 0, `${route} should contain bytes`);
@@ -54,7 +54,7 @@ export async function smokeApplication(appRoot = projectRoot) {
     }
     assert.equal((await get('/api/author', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'https://external.invalid' }, body })).status, 403);
     assert.equal((await get('/src/provider.js')).status, 404);
-    return { ok: true, verification: 'actual CLI and HTTP routes passed with provider credentials removed', routes: 12 };
+    return { ok: true, verification: 'actual CLI and HTTP routes passed with provider credentials removed', routes: 13 };
   } catch (error) {
     // Startup stderr contains only this application's process output; provider
     // credentials were removed. Keep failures concise for packaging logs.

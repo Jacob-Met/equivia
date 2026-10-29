@@ -49,7 +49,7 @@ test('actual HTTP serves EQUIVIA assets and safe status while withholding server
     const config = await send(server, { path: '/api/config' });
     assert.equal(JSON.parse(config.text).model.configured, true);
     assert.equal(config.text.includes(ENV.NEBIUS_API_KEY), false);
-    for (const path of ['/', '/styles.css', '/app.js', '/src/engine.js', '/src/model.js', '/src/session.js']) {
+    for (const path of ['/', '/styles.css', '/app.js', '/src/engine.js', '/src/model.js', '/src/session.js', '/src/forecast.js']) {
       const asset = await send(server, { path });
       assert.equal(asset.status, 200); assert.ok(asset.text.length);
       assert.equal(asset.headers['x-content-type-options'], 'nosniff');
