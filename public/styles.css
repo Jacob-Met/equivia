@@ -224,3 +224,6 @@ footer p { font:italic 12px Georgia,serif; margin:0; }
   .forecast-count-list { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .forecast-count-label,.forecast-exact,.forecast-observed { font-size:12px; }
 }
+
+/* The manual creator is a separate, continuous target beside the existing creator actions. */
+.worldmaker-controls>.creator-entry { display:flex; align-items:center; width:fit-content; max-width:100%; min-height:44px; padding:10px 0; font-size:12px; line-height:1.5; color:inherit; }

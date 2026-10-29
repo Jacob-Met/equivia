@@ -13,7 +13,10 @@ const routes = new Map([
   ['/index.html', ['public/index.html', 'text/html; charset=utf-8']],
   ['/styles.css', ['public/styles.css', 'text/css; charset=utf-8']],
   ['/app.js', ['public/app.js', 'text/javascript; charset=utf-8']],
-  ...['engine', 'model', 'session', 'forecast'].map(name => [`/src/${name}.js`, [`src/${name}.js`, 'text/javascript; charset=utf-8']]),
+  ['/creator', ['public/creator.html', 'text/html; charset=utf-8']],
+  ['/creator.css', ['public/creator.css', 'text/css; charset=utf-8']],
+  ['/creator.js', ['public/creator.js', 'text/javascript; charset=utf-8']],
+  ...['engine', 'model', 'session', 'forecast', 'creator'].map(name => [`/src/${name}.js`, [`src/${name}.js`, 'text/javascript; charset=utf-8']]),
 ]);
 const securityHeaders = {
   'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
