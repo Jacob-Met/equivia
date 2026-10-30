@@ -21,7 +21,7 @@ test('explicit model and existing key are required; unavailable means no fabrica
 });
 
 test('safe status and approved endpoint never disclose the credential', async () => {
-  assert.deepEqual(providerStatus(env), { configured: true, provider: 'nebius', model: 'configured/model', baseUrl: 'https://api.tokenfactory.us-central1.nebius.com/v1/' });
+  assert.deepEqual(providerStatus(env), { configured: true, provider: 'nebius', model: 'configured/model', baseUrl: 'https://api.tokenfactory.nebius.com/v1/' });
   for (const base of ['http://api.tokenfactory.nebius.com/v1/', 'https://evil.invalid/v1/', 'https://user:pass@api.tokenfactory.nebius.com/v1/', 'https://api.tokenfactory.nebius.com/v1/?secret=bad']) {
     const status = providerStatus({ ...env, NEBIUS_BASE_URL: base });
     assert.equal(status.configured, false); assert.equal(status.baseUrl, null);
@@ -30,11 +30,11 @@ test('safe status and approved endpoint never disclose the credential', async ()
 });
 
 test('transport uses fixed purpose bounds and only returns safe successful response metadata', async () => {
-  for (const [purpose, tokenLimit] of [['coach', 1200], ['author', 4096]]) {
+  for (const [purpose, tokenLimit] of [['coach', 2048], ['author', 8192]]) {
     let calls = 0;
     const result = await callNemotron(request(purpose), { env, fetchImpl: async (url, options) => {
       calls++;
-      assert.equal(url, 'https://api.tokenfactory.us-central1.nebius.com/v1/chat/completions');
+      assert.equal(url, 'https://api.tokenfactory.nebius.com/v1/chat/completions');
       assert.equal(options.redirect, 'error');
       assert.equal(options.signal instanceof AbortSignal, true);
       const sent = JSON.parse(options.body);
@@ -90,4 +90,14 @@ test('streamed oversized and malformed provider responses are rejected', async (
   assert.equal(tooLarge.ok, false); assert.equal(cancelled, true);
   const malformed = await callNemotron(request(), { env, fetchImpl: async () => new Response('{incomplete', { status: 200 }) });
   assert.equal(malformed.ok, false); assert.equal(malformed.error.code, 'INVALID_PROVIDER_RESPONSE');
+});
+
+test('null tool and function fields from OpenAI-compatible providers are treated as absent', async () => {
+  // Shape observed from the live Token Factory endpoint: explicit nulls, finish_reason stop.
+  const nullFields = body({ message: { role: 'assistant', content: '{"proposal":"stub"}', refusal: null, tool_calls: null, function_call: null } });
+  const result = await callNemotron(request(), { env, fetchImpl: async () => response(nullFields) });
+  assert.equal(result.ok, true);
+  assert.equal(result.content, '{"proposal":"stub"}');
+  const toolCall = await callNemotron(request(), { env, fetchImpl: async () => response(body({ message: { role: 'assistant', content: '{}', tool_calls: [{ id: 'x' }] } })) });
+  assert.equal(toolCall.ok, false); assert.equal(toolCall.error.code, 'INVALID_PROVIDER_RESPONSE');
 });

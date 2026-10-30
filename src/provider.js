@@ -1,9 +1,9 @@
 /** Server-only, bounded Nebius transport. No credential discovery or offline reply. */
-const BASE_URL = 'https://api.tokenfactory.us-central1.nebius.com/v1/';
+const BASE_URL = 'https://api.tokenfactory.nebius.com/v1/';
 const HOSTS = new Set(['api.tokenfactory.us-central1.nebius.com', 'api.tokenfactory.nebius.com']);
 const MODEL_ID = /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,199}$/;
 const LIMIT = 65536;
-const TOKEN_LIMITS = Object.freeze({ coach: 1200, author: 4096 });
+const TOKEN_LIMITS = Object.freeze({ coach: 2048, author: 8192 });
 class ProviderFailure extends Error {
   constructor(code, message) { super(message); this.code = code; }
 }
@@ -81,8 +81,8 @@ function contentFrom(body) {
   if (message?.refusal !== undefined && message.refusal !== null && message.refusal !== '') fail('PROVIDER_REFUSED', 'The model did not provide a proposal. No state was changed.');
   if (choice?.finish_reason !== 'stop' || message?.role !== 'assistant' || typeof message.content !== 'string'
     || !message.content.trim() || new TextEncoder().encode(message.content).length > LIMIT
-    || (message.tool_calls !== undefined && (!Array.isArray(message.tool_calls) || message.tool_calls.length))
-    || message.function_call !== undefined) fail('INVALID_PROVIDER_RESPONSE', 'The model returned an incomplete or unsupported message. No state was changed.');
+    || (message.tool_calls !== undefined && message.tool_calls !== null && (!Array.isArray(message.tool_calls) || message.tool_calls.length))
+    || (message.function_call !== undefined && message.function_call !== null)) fail('INVALID_PROVIDER_RESPONSE', 'The model returned an incomplete or unsupported message. No state was changed.');
   return message.content;
 }
 function usageFrom(body) {
