@@ -99,6 +99,7 @@ legend { font-size:10px; margin-bottom:9px; color:#697b63; }
 .run-row .primary { min-width:145px; display:flex; gap:20px; justify-content:space-between; }
 .experiment-result { border-top:1px solid var(--line); margin-top:22px; padding-top:17px; font-size:12px; line-height:1.7; color:#4a624d; }
 .experiment-result strong { color:var(--ink); }
+.experiment-result > .small { overflow-wrap:anywhere; }
 .experiment-result .result-pairs { display:flex; gap:8px; margin-bottom:10px; }
 .result-chip { font-size:11px; padding:6px 9px; border-radius:3px; border:1px solid #ccd7c1; background:#edf1e5; }
 .section-line { display:flex; justify-content:space-between; align-items:center; gap:20px; margin-bottom:16px; }
@@ -126,7 +127,7 @@ legend { font-size:10px; margin-bottom:9px; color:#697b63; }
 .entry-outcome { font-size:11px; color:#4f684e; white-space:nowrap; padding-top:2px; }
 .empty-journal { border:1px dashed #cbd5c1; padding:20px; font:italic 13px/1.7 Georgia,serif; color:#839275; margin:0; }
 .debrief-content { background:#e7eddd; border:1px solid #cad7bd; padding:20px; margin-top:20px; border-radius:4px; font-size:12px; line-height:1.75; }
-.debrief-content h3 { font:22px Georgia,serif; margin-bottom:12px; }
+.debrief-content h3 { font:22px Georgia,serif; margin-bottom:12px; overflow-wrap:anywhere; }
 .thinking-column { padding-top:22px; }
 .thinking-note { padding:0 0 25px; }
 .thinking-note .eyebrow { font-size:8px; }
