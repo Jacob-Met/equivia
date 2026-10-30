@@ -3,17 +3,28 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#21393b">
+  <meta name="theme-color" content="#0b1218">
   <title>EQUIVIA · A laboratory for better questions</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%23f3f1e9'/%3E%3Cpath d='M16 32h32' stroke='%235e7763' stroke-width='3'/%3E%3Ccircle cx='16' cy='32' r='8' fill='%23f3f1e9' stroke='%235e7763' stroke-width='3'/%3E%3Ccircle cx='48' cy='32' r='8' fill='%235e7763'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%230b1218'/%3E%3Cpath d='M16 32h32' stroke='%237ed6e6' stroke-width='3'/%3E%3Ccircle cx='16' cy='32' r='8' fill='%230b1218' stroke='%237ed6e6' stroke-width='3'/%3E%3Ccircle cx='48' cy='32' r='8' fill='%23f2b255'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <header class="masthead">
-    <a href="/" class="brand" aria-label="Equivia home"><span class="brand-symbol" aria-hidden="true">◌—●</span>EQUIVIA</a>
-    <span class="brand-note">a laboratory for better questions</span>
-    <nav aria-label="Investigation files"><button id="open-notebook" class="quiet">Open notebook</button><button id="save-notebook" class="outline">Save notebook <span aria-hidden="true">↗</span></button></nav>
+  <a class="skip-link" href="#bench">Skip to the bench</a>
+  <header class="topbar">
+    <h1 class="sr-only">EQUIVIA · the matching lamps</h1>
+    <a href="/" class="brand" aria-label="Equivia home"><span class="brand-lamp" aria-hidden="true"></span>EQUIVIA</a>
+    <div class="introduction">
+      <p class="eyebrow">INVESTIGATION · THE MATCHING LAMPS</p>
+      <div class="brief"><p>These two lights always agree. Does A drive B, or does B drive A?</p></div>
+    </div>
+    <nav class="topbar-actions" aria-label="Investigation files and tools">
+      <button id="new-investigation" class="quiet">New investigation</button>
+      <button id="open-notebook" class="quiet">Open notebook</button>
+      <button id="save-notebook" class="quiet">Save notebook</button>
+      <button id="open-drawer" class="outline" aria-expanded="false" aria-controls="drawer">Coach &amp; studio</button>
+    </nav>
   </header>
+
   <main>
     <section id="notebook-recovery" class="notebook-recovery" aria-labelledby="recovery-title" hidden>
       <p class="eyebrow">ORIGINAL NOTEBOOK · RECOVERY</p>
@@ -23,54 +34,154 @@
       <div class="recovery-actions"><button id="download-unreadable" class="outline">Download original recovery copy</button><button id="replace-unreadable" class="primary">Back up and replace saved notebook</button></div>
       <div id="recovery-archive" class="recovery-actions" aria-label="Earlier original notebook copies"></div>
     </section>
-    <section class="introduction">
-      <div><p class="eyebrow">INVESTIGATION 01 · THE MATCHING LAMPS</p><h1>Looking isn't<br>always knowing.</h1></div>
-      <div class="brief"><p>These two lights always agree.<br>Does A drive B, or does B drive A?</p><p class="muted">Watch. Make a prediction.<br>Then change something.</p></div>
-      <button id="new-investigation" class="text-button new-case">Start a new investigation <span aria-hidden="true">↻</span></button>
-    </section>
 
-    <div class="lab-layout">
-      <div class="main-column">
-        <section class="observation-band" aria-labelledby="observation-title">
-          <div><p class="eyebrow">01 / WHAT YOU CAN SEE</p><h2 id="observation-title">Two explanations. The same evidence.</h2></div>
-          <div id="observation-summary" class="observed-counts"></div>
-          <button id="observe" class="text-button">Watch 8 more trials ↗</button>
-          <p class="observation-note">Both worlds predict the same observable distribution: half both off, half both on. More watching cannot separate them.</p>
-        </section>
-
-        <section class="bench" aria-labelledby="bench-title">
-          <div class="bench-heading"><div><p class="eyebrow">02 / ASK A DIFFERENT QUESTION</p><h2 id="bench-title">Take control of one lamp.</h2></div><div id="budget" class="budget" aria-live="polite"></div></div>
-          <div class="lamps" id="lamps" aria-label="Latest lamp states">
-            <div class="lamp" id="lamp-A"><div class="lamp-label"><span>A</span><span id="state-A">READY</span></div><svg viewBox="0 0 260 230" role="img" aria-label="Lamp A"><defs><radialGradient id="halo-A"><stop offset="0" stop-color="#eecb7b" stop-opacity=".7"/><stop offset="1" stop-color="#eecb7b" stop-opacity="0"/></radialGradient></defs><ellipse class="halo" cx="130" cy="93" rx="110" ry="90" fill="url(#halo-A)"/><path class="glass" d="M91 126C58 106 64 59 95 43C125 27 165 39 179 68C191 91 182 113 168 127L158 151H101Z"/><path class="filament" d="M108 147L105 108L121 120L132 102L143 120L158 108L151 147"/><path class="neck" d="M101 151H158V177H101Z"/><path class="rings" d="M100 157H160M100 166H160M105 175H154"/><path class="stand" d="M112 180H147L155 196H181V207H79V196H104Z"/><ellipse class="base-shadow" cx="130" cy="218" rx="64" ry="5"/></svg><span id="clamp-A" class="clamp-label">FREE TO RESPOND</span></div>
-            <div class="unknown-link" aria-hidden="true"><span>?</span><div></div><small>the mechanism<br>is hidden</small></div>
-            <div class="lamp" id="lamp-B"><div class="lamp-label"><span>B</span><span id="state-B">READY</span></div><svg viewBox="0 0 260 230" role="img" aria-label="Lamp B"><defs><radialGradient id="halo-B"><stop offset="0" stop-color="#eecb7b" stop-opacity=".7"/><stop offset="1" stop-color="#eecb7b" stop-opacity="0"/></radialGradient></defs><ellipse class="halo" cx="130" cy="93" rx="110" ry="90" fill="url(#halo-B)"/><path class="glass" d="M91 126C58 106 64 59 95 43C125 27 165 39 179 68C191 91 182 113 168 127L158 151H101Z"/><path class="filament" d="M108 147L105 108L121 120L132 102L143 120L158 108L151 147"/><path class="neck" d="M101 151H158V177H101Z"/><path class="rings" d="M100 157H160M100 166H160M105 175H154"/><path class="stand" d="M112 180H147L155 196H181V207H79V196H104Z"/><ellipse class="base-shadow" cx="130" cy="218" rx="64" ry="5"/></svg><span id="clamp-B" class="clamp-label">FREE TO RESPOND</span></div>
-          </div>
-          <div class="experiment-controls">
-            <fieldset><legend>Hold this lamp</legend><div class="segmented"><label><input type="radio" name="target" value="A" checked><span>A</span></label><label><input type="radio" name="target" value="B"><span>B</span></label></div></fieldset>
-            <fieldset><legend>In this state</legend><div class="segmented"><label><input type="radio" name="value" value="1" checked><span>On</span></label><label><input type="radio" name="value" value="0"><span>Off</span></label></div></fieldset>
-            <p class="clamp-explanation">A clamp replaces a lamp's usual input. The other lamp follows its existing rule.</p>
-          </div>
-          <div class="prediction-box"><div><span class="step-label">PREDICT BEFORE YOU TRY</span><h3 id="prediction-question">How often will B be on?</h3></div><fieldset id="predictions"><label for="prediction-percent">Your probability estimate</label><div class="prediction-value"><input id="prediction-percent" type="number" min="0" max="100" step="any" inputmode="decimal" placeholder="0–100"><span aria-hidden="true">%</span></div></fieldset></div>
-          <div class="run-row"><p id="run-hint">Choose a prediction to begin.</p><button id="run-one" class="primary" disabled>Run one trial <span aria-hidden="true">→</span></button><button id="run-three" class="outline" disabled>Run three</button></div>
-          <div id="experiment-result" class="experiment-result" aria-live="polite" hidden></div>
-        </section>
-
-        <section class="hypotheses" aria-labelledby="hypotheses-title"><div class="section-line"><h2 id="hypotheses-title">What still fits?</h2><span>Equal starting weights · these models only</span></div><div id="hypothesis-list" class="hypothesis-list"></div><p class="small muted">Weights describe support among the declared candidates. A high weight is not a proof, and an unmodeled mechanism could behave differently.</p></section>
-
-        <section class="journal" aria-labelledby="journal-title"><div class="section-line"><div><p class="eyebrow">03 / THE RECORD</p><h2 id="journal-title">Your experiment notebook</h2></div><button id="debrief" class="text-button">Finish & reveal the mechanism ↗</button></div><div class="evidence-report-export"><button id="save-evidence-report" class="outline" aria-describedby="evidence-report-help">Save evidence report <span aria-hidden="true">↗</span></button><p id="evidence-report-help" class="small muted">Readable HTML with recorded evidence and predictions. The hidden selection and replay seeds are omitted; your current explanation is included.</p></div><div id="journal-entries"></div><div id="debrief-content" class="debrief-content" hidden></div></section>
+    <section class="bench" id="bench" aria-labelledby="bench-title">
+      <div class="bench-head">
+        <h2 id="bench-title">Hold a lamp. Watch the other one.</h2>
+        <div id="budget" class="budget" aria-live="polite"></div>
       </div>
 
-      <aside class="thinking-column" aria-label="Reasoning and model guidance">
-        <div class="thinking-note"><p class="eyebrow">A QUESTION TO KEEP IN MIND</p><h2>What would happen<br>if you intervened?</h2><p>“A is on” and “I held A on” may look identical. They can mean very different things.</p><button id="show-predictions" class="text-button" aria-expanded="false" aria-controls="prediction-comparison">Compare the worlds' predictions ↓</button><div id="prediction-comparison" hidden></div><div class="observation-comparison-entry"><button id="show-observation-comparison" class="text-button" aria-expanded="false" aria-controls="observation-comparison">Seeing or holding? Compare both ↓</button><section id="observation-comparison" aria-labelledby="observation-question" hidden><label for="observation-choice">Explore a condition</label><select id="observation-choice"><option value="A1">A is on</option><option value="A0">A is off</option><option value="B1">B is on</option><option value="B0">B is off</option></select><h3 id="observation-question">Seeing A on, or holding it on?</h3><p class="observation-explainer">Seeing keeps only natural results with that lamp state. Holding replaces the lamp’s rule and lets the other lamp respond.</p><div id="observation-worlds"></div><p class="observation-footnote">Exact predictions from each candidate’s rules, not filtered counts from your notebook or combined candidate weights. Exploring here leaves your clamp, prediction and trials unchanged.</p></section></div></div>
-        <section class="explanation"><label for="learner-explanation">Your working explanation</label><textarea id="learner-explanation" rows="5" maxlength="1600" placeholder="I think A controls B because…"></textarea><button id="ask-guide" class="outline" disabled>Question my reasoning <span aria-hidden="true">↗</span></button><p id="model-status" class="small muted">Checking optional model guidance…</p><div id="guide-advice" hidden></div></section>
-        <details class="method"><summary>What is this lab assuming?</summary><p>These are authored binary worlds. A root lamp is a fair random bit; the other follows its parent. The hidden structural world stays fixed, while every trial draws fresh noise. A clamp sets one variable without changing the other's rule.</p><p>Exact enumeration establishes equality for these models. The observations you collect are finite random samples. This laboratory does not establish causes in the outside world.</p><button id="inspect-worlds" class="text-button" aria-expanded="false" aria-controls="world-source">Inspect the executable rules ↓</button><pre id="world-source" hidden></pre></details>
-      </aside>
-    </div>
+      <div class="lamps" id="lamps" aria-label="Latest lamp states">
+        <div class="lamp" id="lamp-A">
+          <div class="lamp-label"><span class="lamp-letter">A</span><span id="state-A" class="lamp-state">READY</span></div>
+          <svg viewBox="0 0 260 230" role="img" aria-label="Lamp A"><defs><radialGradient id="halo-A"><stop offset="0" stop-color="#f2b255" stop-opacity=".55"/><stop offset="1" stop-color="#f2b255" stop-opacity="0"/></radialGradient></defs><ellipse class="halo" cx="130" cy="93" rx="110" ry="90" fill="url(#halo-A)"/><path class="glass" d="M91 126C58 106 64 59 95 43C125 27 165 39 179 68C191 91 182 113 168 127L158 151H101Z"/><path class="filament" d="M108 147L105 108L121 120L132 102L143 120L158 108L151 147"/><path class="neck" d="M101 151H158V177H101Z"/><path class="rings" d="M100 157H160M100 166H160M105 175H154"/><path class="stand" d="M112 180H147L155 196H181V207H79V196H104Z"/><ellipse class="base-shadow" cx="130" cy="218" rx="64" ry="5"/></svg>
+          <span id="clamp-A" class="clamp-label">FREE TO RESPOND</span>
+          <div class="hold" role="group" aria-label="Hold lamp A">
+            <button type="button" data-hold="A:0" aria-label="Hold A off" aria-pressed="false"><span>Off</span></button>
+            <button type="button" data-hold="A:1" aria-label="Hold A on" aria-pressed="true"><span>On</span></button>
+          </div>
+        </div>
 
-    <section class="worldmaker" aria-labelledby="worldmaker-title"><div><p class="eyebrow">FOR THE CURIOUS · CREATOR STUDIO</p><h2 id="worldmaker-title">Make a pair the evidence can't tell apart.</h2><p>Describe two possible mechanisms. An NVIDIA model can propose executable worlds; exact calculations must verify their shared observations and a separating experiment.</p></div><div class="worldmaker-controls"><label class="sr-only" for="world-brief">Describe a pair of worlds</label><textarea id="world-brief" rows="3" maxlength="1600" placeholder="Two lamps agree most of the time. Could noisy rules hide which lamp drives the other?…"></textarea><button id="propose-worlds" class="outline" disabled>Propose a world pair ↗</button><button id="import-worlds" class="text-button">Open an authored world pair</button><a class="text-button creator-entry" href="/creator" target="_blank" rel="noopener">Create a pair by hand (new tab)</a><div id="author-result" hidden></div></div></section>
+        <div class="balance" id="odds-scale">
+          <p class="balance-caption">Hypothesis odds</p>
+          <div class="beam" aria-hidden="true">
+            <span class="post"></span>
+            <span class="pan pan-left"><span id="odds-left-value" class="pan-value">50%</span><span id="odds-left-label" class="pan-label">A drives B</span></span>
+            <span class="pan pan-right"><span id="odds-right-value" class="pan-value">50%</span><span id="odds-right-label" class="pan-label">B drives A</span></span>
+          </div>
+          <p class="balance-note">Tips as evidence comes in. Weights are conditional on the declared candidates.</p>
+        </div>
+
+        <div class="lamp" id="lamp-B">
+          <div class="lamp-label"><span class="lamp-letter">B</span><span id="state-B" class="lamp-state">READY</span></div>
+          <svg viewBox="0 0 260 230" role="img" aria-label="Lamp B"><defs><radialGradient id="halo-B"><stop offset="0" stop-color="#f2b255" stop-opacity=".55"/><stop offset="1" stop-color="#f2b255" stop-opacity="0"/></radialGradient></defs><ellipse class="halo" cx="130" cy="93" rx="110" ry="90" fill="url(#halo-B)"/><path class="glass" d="M91 126C58 106 64 59 95 43C125 27 165 39 179 68C191 91 182 113 168 127L158 151H101Z"/><path class="filament" d="M108 147L105 108L121 120L132 102L143 120L158 108L151 147"/><path class="neck" d="M101 151H158V177H101Z"/><path class="rings" d="M100 157H160M100 166H160M105 175H154"/><path class="stand" d="M112 180H147L155 196H181V207H79V196H104Z"/><ellipse class="base-shadow" cx="130" cy="218" rx="64" ry="5"/></svg>
+          <span id="clamp-B" class="clamp-label">FREE TO RESPOND</span>
+          <div class="hold" role="group" aria-label="Hold lamp B">
+            <button type="button" data-hold="B:0" aria-label="Hold B off" aria-pressed="false"><span>Off</span></button>
+            <button type="button" data-hold="B:1" aria-label="Hold B on" aria-pressed="true"><span>On</span></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Radio state is driven by the switches above; the inputs stay in the DOM as the source of truth. -->
+      <div class="radio-state" hidden>
+        <fieldset><legend>Hold this lamp</legend><div class="segmented"><label><input type="radio" name="target" value="A" checked><span>A</span></label><label><input type="radio" name="target" value="B"><span>B</span></label></div></fieldset>
+        <fieldset><legend>In this state</legend><div class="segmented"><label><input type="radio" name="value" value="1" checked><span>On</span></label><label><input type="radio" name="value" value="0"><span>Off</span></label></div></fieldset>
+      </div>
+
+      <div class="procedure">
+        <div class="prediction-box">
+          <div>
+            <span class="step-label">1 · PREDICT</span>
+            <h3 id="prediction-question">How often will B be on?</h3>
+          </div>
+          <fieldset id="predictions"><label for="prediction-percent">Your probability estimate</label><div class="prediction-value"><input id="prediction-percent" type="number" min="0" max="100" step="any" inputmode="decimal" placeholder="0–100"><span aria-hidden="true">%</span></div></fieldset>
+        </div>
+        <div class="run-row">
+          <p id="run-hint">Choose a prediction to begin.</p>
+          <button id="run-one" class="primary" disabled>Run one trial <span aria-hidden="true">→</span></button>
+          <button id="run-three" class="outline" disabled>Run three</button>
+        </div>
+        <div id="experiment-result" class="experiment-result" aria-live="polite" hidden></div>
+      </div>
+    </section>
+
+    <section class="record" aria-label="Notebook">
+      <section class="observation-band" aria-labelledby="observation-title">
+        <div class="observation-head">
+          <div><p class="eyebrow">PASSIVE WATCHING</p><h2 id="observation-title">Two explanations. The same evidence.</h2></div>
+          <div id="observation-summary" class="observed-counts"></div>
+          <button id="observe" class="text-button">Watch 8 more trials ↗</button>
+        </div>
+        <p class="observation-note">Both worlds predict the same observable distribution: half both off, half both on. More watching cannot separate them.</p>
+      </section>
+
+      <section class="journal" aria-labelledby="journal-title">
+        <div class="journal-head">
+          <div><p class="eyebrow">THE RECORD</p><h2 id="journal-title">Experiment notebook</h2></div>
+          <button id="debrief" class="text-button">Finish &amp; reveal the mechanism ↗</button>
+        </div>
+        <div id="journal-entries" class="journal-strip"></div>
+        <div id="debrief-content" class="debrief-content" hidden></div>
+      </section>
+
+      <details class="candidates">
+        <summary>What still fits? <span class="summary-note">Candidate weights · these models only</span></summary>
+        <section class="hypotheses" aria-labelledby="hypotheses-title">
+          <h2 id="hypotheses-title" class="sr-only">What still fits?</h2>
+          <div id="hypothesis-list" class="hypothesis-list"></div>
+          <p class="small muted">Weights describe support among the declared candidates. A high weight is not a proof, and an unmodeled mechanism could behave differently.</p>
+        </section>
+      </details>
+    </section>
+
     <div class="status-row"><p id="status" role="status" aria-live="polite">Preparing your investigation…</p><span id="save-status">Notebook stays on this device</span></div>
   </main>
-  <footer><span>EQUIVIA</span><p>The world doesn't change when you look. It might when you act.</p><span>AUTHORED WORLDS · PRIVATE DEVELOPMENT</span></footer>
+
+  <aside id="drawer" class="drawer" aria-labelledby="drawer-title" hidden>
+    <div class="drawer-head">
+      <h2 id="drawer-title">Coach &amp; studio</h2>
+      <button id="close-drawer" class="quiet" type="button">Close</button>
+    </div>
+
+    <section class="drawer-section" aria-labelledby="coach-title">
+      <p class="eyebrow">COACH</p>
+      <div class="thinking-note">
+        <h3 id="coach-title">What would happen if you intervened?</h3>
+        <p>“A is on” and “I held A on” may look identical. They can mean very different things.</p>
+        <button id="show-predictions" class="text-button" aria-expanded="false" aria-controls="prediction-comparison">Compare the worlds' predictions ↓</button>
+        <div id="prediction-comparison" hidden></div>
+        <div class="observation-comparison-entry"><button id="show-observation-comparison" class="text-button" aria-expanded="false" aria-controls="observation-comparison">Seeing or holding? Compare both ↓</button><section id="observation-comparison" aria-labelledby="observation-question" hidden><label for="observation-choice">Explore a condition</label><select id="observation-choice"><option value="A1">A is on</option><option value="A0">A is off</option><option value="B1">B is on</option><option value="B0">B is off</option></select><h3 id="observation-question">Seeing A on, or holding it on?</h3><p class="observation-explainer">Seeing keeps only natural results with that lamp state. Holding replaces the lamp’s rule and lets the other lamp respond.</p><div id="observation-worlds"></div><p class="observation-footnote">Exact predictions from each candidate’s rules, not filtered counts from your notebook or combined candidate weights. Exploring here leaves your clamp, prediction and trials unchanged.</p></section></div>
+      </div>
+
+      <section class="explanation">
+        <label for="learner-explanation">Your working explanation</label>
+        <textarea id="learner-explanation" rows="5" maxlength="1600" placeholder="I think A controls B because…"></textarea>
+        <button id="ask-guide" class="outline" disabled>Question my reasoning <span aria-hidden="true">↗</span></button>
+        <p id="model-status" class="small muted">Checking optional model guidance…</p>
+        <div id="guide-advice" hidden></div>
+      </section>
+
+      <details class="method">
+        <summary>What is this lab assuming?</summary>
+        <p>These are authored binary worlds. A root lamp is a fair random bit; the other follows its parent. The hidden structural world stays fixed, while every trial draws fresh noise. A clamp sets one variable without changing the other's rule.</p>
+        <p>Exact enumeration establishes equality for these models. The observations you collect are finite random samples. This laboratory does not establish causes in the outside world.</p>
+        <button id="inspect-worlds" class="text-button" aria-expanded="false" aria-controls="world-source">Inspect the executable rules ↓</button>
+        <pre id="world-source" hidden></pre>
+      </details>
+    </section>
+
+    <section class="drawer-section" aria-labelledby="studio-title">
+      <p class="eyebrow">CREATOR STUDIO</p>
+      <h3 id="studio-title">Make a pair the evidence can't tell apart.</h3>
+      <p class="studio-copy">Describe two possible mechanisms. An NVIDIA model can propose executable worlds; exact calculations must verify their shared observations and a separating experiment.</p>
+      <div class="worldmaker-controls">
+        <label class="sr-only" for="world-brief">Describe a pair of worlds</label>
+        <textarea id="world-brief" rows="3" maxlength="1600" placeholder="Two lamps agree most of the time. Could noisy rules hide which lamp drives the other?…"></textarea>
+        <button id="propose-worlds" class="outline" disabled>Propose a world pair ↗</button>
+        <button id="import-worlds" class="text-button">Open an authored world pair</button>
+        <a class="text-button creator-entry" href="/creator" target="_blank" rel="noopener">Create a pair by hand (new tab)</a>
+        <div id="author-result" hidden></div>
+      </div>
+    </section>
+
+    <section class="drawer-section" aria-labelledby="export-title">
+      <p class="eyebrow">REPORT</p>
+      <h3 id="export-title">Share the evidence</h3>
+      <div class="evidence-report-export"><button id="save-evidence-report" class="outline" aria-describedby="evidence-report-help">Save evidence report <span aria-hidden="true">↗</span></button><p id="evidence-report-help" class="small muted">Readable HTML with recorded evidence and predictions. The hidden selection and replay seeds are omitted; your current explanation is included.</p></div>
+    </section>
+  </aside>
+
   <input type="file" id="notebook-file" accept=".json,application/json" hidden>
   <input type="file" id="world-file" accept=".json,application/json" hidden>
   <script type="module" src="/app.js"></script>

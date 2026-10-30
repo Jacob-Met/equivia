@@ -168,6 +168,11 @@ function availability() {
   $('ask-guide').disabled = modelBusy || !config?.configured;
   $('propose-worlds').disabled = modelBusy || !config?.configured;
   document.querySelectorAll('[name="target"],[name="value"],#prediction-percent').forEach(input => { input.disabled = busy || session.revealed || remaining === 0; });
+  document.querySelectorAll('[data-hold]').forEach(button => {
+    const [lamp, value] = button.dataset.hold.split(':');
+    button.setAttribute('aria-pressed', String(target() === lamp && selected('value') === value));
+    button.disabled = busy || session.revealed || remaining === 0;
+  });
   $('run-hint').textContent = session.revealed ? 'Investigation complete. Start a new one to explore again.' : remaining === 0 ? 'Your experiment budget is used. Review the evidence, then finish.' : prediction === undefined ? 'Choose a prediction to begin.' : 'Each trial spends one experiment token.';
   $('prediction-question').textContent = `How often will ${other()} be on?`;
   $('budget').replaceChildren(element('span', `${remaining} / ${session.budget} trials left`));
@@ -210,8 +215,32 @@ function renderLamps() {
     $(`lamp-${id}`).querySelector('svg').setAttribute('aria-label', `Lamp ${id}: ${on ? 'on' : 'off'}${clamped ? ', clamped by the experiment' : ''}`);
   }
 }
+// The balance between the lamps: each candidate's conditional weight, tipping toward the heavier one.
+function renderScale(beliefs) {
+  const scale = $('odds-scale');
+  const weightOf = world => beliefs.hypotheses.find(item => item.worldId === world.id)?.probability;
+  const drivesB = world => world.variables.find(v => v.id === 'B')?.parents.includes('A');
+  const left = session.worlds.find(drivesB) ?? session.worlds[0];
+  const right = session.worlds.find(world => world !== left) ?? session.worlds[1];
+  const label = world => world.label || world.id;
+  $('odds-left-label').textContent = label(left);
+  $('odds-right-label').textContent = label(right);
+  if (beliefs.status !== 'ok') {
+    scale.style.setProperty('--tilt', '0deg'); scale.classList.add('impossible');
+    $('odds-left-value').textContent = '—'; $('odds-right-value').textContent = '—';
+    return;
+  }
+  scale.classList.remove('impossible');
+  const leftWeight = weightOf(left), rightWeight = weightOf(right);
+  // Heavier left weight tips the left pan down: a negative angle lowers the left end.
+  const tilt = (fractionToNumber(rightWeight) - fractionToNumber(leftWeight)) * 22;
+  scale.style.setProperty('--tilt', `${tilt.toFixed(2)}deg`);
+  $('odds-left-value').textContent = percent(leftWeight);
+  $('odds-right-value').textContent = percent(rightWeight);
+}
 function renderHypotheses() {
   const beliefs = beliefState(session);
+  renderScale(beliefs);
   $('hypothesis-list').replaceChildren();
   if (beliefs.status !== 'ok') { $('hypothesis-list').append(element('p', 'The evidence is impossible under all candidates. Inspect the notebook before continuing.')); return; }
   for (const world of session.worlds) {
@@ -540,6 +569,21 @@ function displayAuthorProposal(result) {
 
 document.querySelectorAll('[name="target"],[name="value"]').forEach(input => input.addEventListener('change', () => { clearPrediction(); availability(); if (!$('prediction-comparison').hidden) renderComparison(); renderObservationComparison(); }));
 $('prediction-percent').addEventListener('input', availability);
+// The hold switches under each lamp drive the same radio inputs the rest of the page reads.
+document.querySelectorAll('[data-hold]').forEach(button => button.addEventListener('click', () => {
+  const [lamp, value] = button.dataset.hold.split(':');
+  if (target() === lamp && selected('value') === value) return;
+  document.querySelector(`[name="value"][value="${value}"]`).checked = true;
+  const targetInput = document.querySelector(`[name="target"][value="${lamp}"]`);
+  targetInput.checked = true;
+  targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+}));
+$('open-drawer').addEventListener('click', () => {
+  setDisclosure('open-drawer', 'drawer', $('drawer').hidden);
+  if (!$('drawer').hidden) $('close-drawer').focus();
+});
+$('close-drawer').addEventListener('click', () => { setDisclosure('open-drawer', 'drawer', false); $('open-drawer').focus(); });
+document.addEventListener('keydown', event => { if (event.key === 'Escape' && !$('drawer').hidden) $('close-drawer').click(); });
 $('run-one').addEventListener('click', () => run(1)); $('run-three').addEventListener('click', () => run(3));
 $('observe').addEventListener('click', () => {
   try { session = observe(session); changed(); render(); status('Eight more passive observations recorded. They have the same likelihood under both candidates.'); }
