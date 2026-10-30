@@ -271,3 +271,9 @@ footer p { font:italic 12px Georgia,serif; margin:0; }
   .trial-evidence summary { padding:11px; }
   .trial-evidence-body { padding:0 11px 12px; }
 }
+
+/* Explicit public-evidence export, separate from the replay notebook. */
+.evidence-report-export{display:flex;align-items:flex-start;gap:16px;margin:18px 0 24px}
+.evidence-report-export>button{flex-shrink:0}
+.evidence-report-export>p{margin:0;max-width:44ch}
+@media(max-width:600px){.evidence-report-export{flex-direction:column;gap:8px}}
