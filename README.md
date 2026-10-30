@@ -43,6 +43,12 @@ You can download recovery copies as JSON files. These preserve the exact saved t
 
 If the initial saved notebook cannot be read, saving remains paused until you reload. If a replacement cannot be verified, automatic saving and further replacement attempts remain paused. In either case, use **Save notebook** to keep your current investigation, then reload to inspect the saved notebook again.
 
+## Share the recorded evidence
+
+Choose **Save evidence report** in the experiment notebook to download a standalone HTML report. It contains every recorded trial in order, the prediction stored for each intervention, your current explanation, the complete public candidate rules, and exact candidate weights after the listed evidence. Open it offline or print it from a browser.
+
+The report omits the stored hidden candidate selection and replay seeds. Your own text and the observations may still identify or suggest a candidate. It is not a replay notebook: keep **Save notebook** for reopening the investigation. See [the evidence report guide](docs/EVIDENCE_REPORT.md) for what the report records and its interpretation limits.
+
 ## Optional NVIDIA model assistance
 
 The laboratory works without a model connection. When an existing authorized Nebius route is configured, two substantive model roles are available:

@@ -5,6 +5,7 @@ import { verifyAuthoredProposal } from '/src/model.js';
 import { forecast } from '/src/forecast.js';
 import { compareObservation } from '/src/observation-comparison.js';
 import { explainTrial } from '/src/trial-evidence.js';
+import { renderEvidenceReport } from '/src/evidence-report.js';
 
 const $ = id => document.getElementById(id);
 const STORE = 'equivia.notebook.v1';
@@ -157,6 +158,7 @@ function replaceStoredNotebook() {
 function freshSeed() { return crypto.getRandomValues(new Uint32Array(1))[0]; }
 function clearPrediction() { $('prediction-percent').value = ''; }
 function availability() {
+  $('save-evidence-report').disabled = busy;
   const remaining = trialsRemaining(session), prediction = predictionValue();
   const ready = !busy && !session.revealed && prediction !== undefined;
   $('run-one').disabled = !ready || remaining < 1;
@@ -555,6 +557,17 @@ $('learner-explanation').addEventListener('input', event => { session.explanatio
 $('ask-guide').addEventListener('click', guide);
 $('debrief').addEventListener('click', () => { session.revealed = true; changed(); render(); status('The authored mechanism is revealed. Your notebook preserves what the evidence established before the reveal.'); });
 $('new-investigation').addEventListener('click', () => openSession(createSession({ seed: freshSeed() }), 'A fresh matching-lamps investigation is ready. Make a prediction before trying a clamp.'));
+$('save-evidence-report').addEventListener('click', () => {
+  if (busy) return;
+  try {
+    const report = renderEvidenceReport({
+      title: session.title, worlds: session.worlds, history: session.history,
+      explanation: session.explanation, budget: session.budget,
+    });
+    download(report, 'equivia-evidence-report.html', 'text/html;charset=utf-8');
+    status('Evidence report prepared with recorded trials, predictions and your current explanation. Use Save notebook to keep a replayable investigation.');
+  } catch (error) { status(error.message, true); }
+});
 $('save-notebook').addEventListener('click', () => {
   try { download(serializeSession(session), 'equivia-notebook.json'); status('Notebook saved with its worlds, predictions, ordered evidence and replay state.'); }
   catch (error) { status(error.message, true); }
