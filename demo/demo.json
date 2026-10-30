@@ -1,0 +1,51 @@
+{
+  "url": "http://127.0.0.1:4301/",
+  "width": 1440,
+  "height": 900,
+  "steps": [
+    {
+      "say": "EQUIVIA is a practice lab for cause and effect. It helps students and curious people learn how to test an idea.",
+      "do": []
+    },
+    {
+      "say": "Two lamps, A and B, always agree. Your job is to find out which lamp drives the other.",
+      "do": [{ "scroll": 0 }]
+    },
+    {
+      "say": "Holding a lamp is different from watching it. Here you hold lamp A off, and see what lamp B does.",
+      "do": [{ "click": "[data-hold='A:0']" }, { "wait": 600 }]
+    },
+    {
+      "say": "Before each run, write down your guess. Type forty percent for how often lamp B will be on.",
+      "do": [{ "type": ["#prediction-percent", "40"] }]
+    },
+    {
+      "say": "Now run one trial. The lab records what happened and keeps the record.",
+      "do": [{ "click": "#run-one" }, { "wait": 900 }]
+    },
+    {
+      "say": "The balance on the left shows how well each explanation fits the results so far. It tips as evidence comes in.",
+      "do": [{ "wait": 1200 }]
+    },
+    {
+      "say": "Below the lamps, the lab compares your guess with the models before and after the run.",
+      "do": [{ "eval": "document.querySelector('#experiment-result').scrollIntoView({block:'center',behavior:'smooth'})" }, { "wait": 800 }]
+    },
+    {
+      "say": "Run three more trials. A short run can look different from a single guess, and that is normal.",
+      "do": [{ "click": "#run-three" }, { "wait": 1000 }]
+    },
+    {
+      "say": "Open the note for the first trial. It shows how that one result changed the weights.",
+      "do": [{ "eval": "document.querySelector('.journal-entry .trial-evidence summary').scrollIntoView({block:'center',behavior:'smooth'})" }, { "wait": 500 }, { "click": ".journal-entry .trial-evidence summary" }, { "wait": 1200 }]
+    },
+    {
+      "say": "The lab keeps your notebook on this device. Save it as a file to reopen it later, or share an evidence report.",
+      "do": [{ "eval": "window.scrollTo({top:0,behavior:'smooth'})" }, { "wait": 800 }]
+    },
+    {
+      "say": "Make a guess, test it, and let the evidence decide how far it goes.",
+      "do": []
+    }
+  ]
+}

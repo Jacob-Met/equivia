@@ -69,7 +69,7 @@ async function main() {
   const evidence = {
     schema: 'equivia.live-model-check.v1', purpose: args.purpose,
     startedAt: new Date().toISOString(), configuration: config,
-    limits: { ...LIMITS, maxTokens: args.purpose === 'coach' ? 1200 : 4096 },
+    limits: { ...LIMITS, maxTokens: args.purpose === 'coach' ? 2048 : 8192 },
     accepted: false,
   };
   let exitCode = 2;
